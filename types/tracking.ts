@@ -36,6 +36,7 @@ export interface DoseDecreaseTrackedItem extends TrackedItem {
   type: TrackerType.SlowLoweringTheDosage;
   currentUsageValue: number;
   currentUsageUnit: DosageUnit;
+  defaultDose?: number; // configured default amount for quick add
   doseLogs?: DoseLogEntry[]; // individual intakes; summed per day for totals
 }
 

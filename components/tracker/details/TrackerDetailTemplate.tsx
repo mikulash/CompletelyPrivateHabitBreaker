@@ -14,6 +14,7 @@ type TrackerDetailTemplateProps<ItemType> = {
   onDelete: () => void;
   disableSave: boolean;
   renderSummary: (item: ItemType) => ReactNode;
+  extraEditFields?: ReactNode;
   saveLabel?: string;
 };
 
@@ -27,6 +28,7 @@ export function TrackerDetailTemplate<ItemType>({
   onDelete,
   disableSave,
   renderSummary,
+  extraEditFields,
   saveLabel = 'Save changes',
 }: TrackerDetailTemplateProps<ItemType>) {
   return (
@@ -44,6 +46,8 @@ export function TrackerDetailTemplate<ItemType>({
           placeholderTextColor={M3Colors.outline}
           style={styles.input}
         />
+
+        {extraEditFields}
 
         <View style={styles.sectionActions}>
           <TouchableOpacity

@@ -57,6 +57,13 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
     setDoseInput('');
   };
 
+  const handleQuickAdd = () => {
+    if (!item.defaultDose) return;
+    const current = parseFloat(normalizedInput) || 0;
+    const nextVal = current + item.defaultDose;
+    setDoseInput(Number.isInteger(nextVal) ? String(nextVal) : nextVal.toFixed(2));
+  };
+
   const tintColor = M3Colors.vibrantOrange;
 
   return (
@@ -91,6 +98,11 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
 
         {/* Quick Log Action */}
         <View style={styles.actionSection}>
+          {!!item.defaultDose && (
+            <TouchableOpacity onPress={handleQuickAdd} style={[styles.quickAddButton, { backgroundColor: hexToRgba(tintColor, 0.15) }]}>
+              <Text style={[styles.quickAddText, { color: tintColor }]}>+{item.defaultDose}</Text>
+            </TouchableOpacity>
+          )}
           <TextInput
             value={doseInput}
             onChangeText={setDoseInput}
@@ -193,6 +205,17 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 14,
     color: M3Colors.onSurfaceVariant,
+  },
+  quickAddButton: {
+    height: 40,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickAddText: {
+    ...M3Typography.labelLarge,
+    fontWeight: '700',
   },
 });
 

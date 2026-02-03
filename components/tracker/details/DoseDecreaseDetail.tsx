@@ -1,15 +1,17 @@
 import { FontAwesome6 } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
-import { Alert, Modal, StyleSheet, TextInput, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Modal, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
-import { DoseDecreaseTrackedItem, DosageUnit } from '@/types/tracking';
+import { useTrackedItems } from '@/contexts/TrackedItemsContext';
+import { DosageUnit, DoseDecreaseTrackedItem } from '@/types/tracking';
 import { calculateDaysTracked, formatDateForDisplay } from '@/utils/date';
 import { getTrackerIcon } from '@/utils/tracker';
-import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 
 import { TrackerDetailTemplate } from './TrackerDetailTemplate';
 import { TrackingStatsCard } from './TrackingStatsCard';
+
+
 
 type DoseDecreaseDetailProps = {
   item: DoseDecreaseTrackedItem;
@@ -28,6 +30,27 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
 
   const [editAt, setEditAt] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+
+  const [defaultDoseInput, setDefaultDoseInput] = useState<string>(item.defaultDose ? String(item.defaultDose) : '');
+
+  useEffect(() => {
+    setDefaultDoseInput(item.defaultDose ? String(item.defaultDose) : '');
+  }, [item.defaultDose]);
+
+  const handleSaveDefaultDose = () => {
+    const val = parseFloat(defaultDoseInput);
+    if (!defaultDoseInput) {
+      updateItem({ ...item, defaultDose: undefined });
+      Alert.alert('Updated', 'Default dose removed');
+      return;
+    }
+    if (!Number.isFinite(val) || val <= 0) {
+      Alert.alert('Error', 'Please enter a valid positive number');
+      return;
+    }
+    updateItem({ ...item, defaultDose: val });
+    Alert.alert('Updated', `Default dose set to ${val} ${item.currentUsageUnit}`);
+  };
 
   // Helpers for daily totals & pagination
   const convertAmount = (value: number, from: DosageUnit, to: DosageUnit): number => {
@@ -151,6 +174,24 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
   return (
     <TrackerDetailTemplate
       {...props}
+      extraEditFields={
+        <View style={{ marginTop: 16 }}>
+          <Text style={styles.inputLabel}>Default Dose Amount ({item.currentUsageUnit})</Text>
+          <View style={styles.inlineInputRow}>
+            <TextInput
+              value={defaultDoseInput}
+              onChangeText={setDefaultDoseInput}
+              placeholder="e.g. 3"
+              placeholderTextColor="#666"
+              style={[styles.input, { flex: 1 }]}
+              keyboardType="decimal-pad"
+            />
+            <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveDefaultDose}>
+              <Text style={styles.saveButtonText}>Set Default</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      }
       renderSummary={(item) => {
         const icon = getTrackerIcon(item.type);
         const daysTracked = calculateDaysTracked(item.startedAt);
@@ -178,6 +219,8 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                 </Text>
               ) : null}
             </View>
+
+
 
             {/* Weekly graph */}
             <View style={[styles.summaryCard, styles.doseSummary]}>
@@ -496,5 +539,10 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
+  },
+  inlineInputRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
   },
 });
