@@ -9,6 +9,7 @@ import { getTrackerIcon } from '@/utils/tracker';
 import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 
 import { TrackerDetailTemplate } from './TrackerDetailTemplate';
+import { TrackingStatsCard } from './TrackingStatsCard';
 
 type DoseDecreaseDetailProps = {
   item: DoseDecreaseTrackedItem;
@@ -157,6 +158,11 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
         const maxInSlice = Math.max(1, ...slice.map((d) => d.value));
         return (
           <>
+            <TrackingStatsCard
+              startedAt={item.startedAt}
+              resetHistory={item.resetHistory}
+              accentColor={icon.color}
+            />
             <View style={[styles.summaryCard, styles.doseSummary]}>
               <View style={styles.summaryHeader}>
                 <Text style={styles.summaryTitle}>{item.name}</Text>

@@ -11,6 +11,7 @@ export interface TrackedItem {
   startedAt: string;
   type: TrackerType;
   notifiedMilestones?: number[];
+  resetHistory?: ColdTurkeyResetEntry[];
 }
 
 export interface ColdTurkeyResetEntry {
@@ -20,7 +21,6 @@ export interface ColdTurkeyResetEntry {
 
 export interface ColdTurkeyTrackedItem extends TrackedItem {
   type: TrackerType.ColdTurkey;
-  resetHistory?: ColdTurkeyResetEntry[];
 }
 
 export type DosageUnit = 'mg' | 'g';

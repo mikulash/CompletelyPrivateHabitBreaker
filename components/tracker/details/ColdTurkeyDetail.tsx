@@ -14,6 +14,7 @@ import {
 } from '@/utils/tracker';
 
 import { TrackerDetailTemplate } from './TrackerDetailTemplate';
+import { TrackingStatsCard } from './TrackingStatsCard';
 
 type ColdTurkeyDetailProps = {
     item: ColdTurkeyTrackedItem;
@@ -116,7 +117,13 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                 }`;
 
                 return (
-                    <View style={[styles.summaryCard, styles.coldSummary]}>
+                    <>
+                        <TrackingStatsCard
+                            startedAt={item.startedAt}
+                            resetHistory={item.resetHistory}
+                            accentColor={icon.color}
+                        />
+                        <View style={[styles.summaryCard, styles.coldSummary]}>
                         <View style={styles.summaryHeader}>
                             <Text style={styles.summaryTitle}>{item.name}</Text>
                             <View style={[styles.summaryIcon, styles.coldIcon]}>
@@ -277,7 +284,8 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                                 <Text style={styles.resetHistoryEmptyText}>No previous resets logged yet.</Text>
                             ) : null}
                         </View>
-                    </View>
+                        </View>
+                    </>
                 );
             }}
         />

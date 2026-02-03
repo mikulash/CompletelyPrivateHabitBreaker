@@ -103,6 +103,69 @@ export const getColdTurkeyStreakTargets = (resetHistory?: ColdTurkeyResetEntry[]
   return { last, record };
 };
 
+export type TrackingResetStats = {
+  totalTrackedMs: number | null;
+  resetCount: number;
+  averageBetweenResetsMs: number | null;
+  maxBetweenResetsMs: number | null;
+};
+
+export const getTrackingResetStats = (
+  startedAt: string,
+  resetHistory?: ColdTurkeyResetEntry[]
+): TrackingResetStats => {
+  const now = Date.now();
+  const startedMs = new Date(startedAt).getTime();
+  const hasStarted = Number.isFinite(startedMs);
+
+  const validResets = (resetHistory ?? [])
+    .map((entry) => {
+      const start = new Date(entry.startedAt).getTime();
+      const reset = new Date(entry.resetAt).getTime();
+      if (!Number.isFinite(start) || !Number.isFinite(reset) || reset < start) {
+        return null;
+      }
+      return { start, reset };
+    })
+    .filter((entry): entry is { start: number; reset: number } => entry !== null);
+
+  const intervals: number[] = validResets.map((entry) => entry.reset - entry.start);
+  if (hasStarted) {
+    intervals.push(Math.max(0, now - startedMs));
+  }
+
+  const resetCount = validResets.length;
+  const totalTrackedMs = (() => {
+    let earliest = hasStarted ? startedMs : null;
+    for (const entry of validResets) {
+      if (earliest === null || entry.start < earliest) {
+        earliest = entry.start;
+      }
+    }
+    return earliest === null ? null : Math.max(0, now - earliest);
+  })();
+
+  if (intervals.length === 0) {
+    return {
+      totalTrackedMs,
+      resetCount,
+      averageBetweenResetsMs: null,
+      maxBetweenResetsMs: null,
+    };
+  }
+
+  const sum = intervals.reduce((acc, value) => acc + value, 0);
+  const averageBetweenResetsMs = Math.round(sum / intervals.length);
+  const maxBetweenResetsMs = Math.max(...intervals);
+
+  return {
+    totalTrackedMs,
+    resetCount,
+    averageBetweenResetsMs,
+    maxBetweenResetsMs,
+  };
+};
+
 export type ColdTurkeyProgress = {
   achieved: ColdTurkeyMilestone[];
   elapsedMs: number;

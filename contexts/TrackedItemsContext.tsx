@@ -10,7 +10,6 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { TRACKED_ITEMS_STORAGE_KEY } from '@/constants/storage';
-import { TrackerType } from '@/enums/TrackerType';
 import { TrackerItem } from '@/types/tracking';
 
 type TrackedItemsContextValue = {
@@ -33,15 +32,11 @@ export function TrackedItemsProvider({ children }: PropsWithChildren) {
             setLoading(true);
             const stored = await AsyncStorage.getItem(TRACKED_ITEMS_STORAGE_KEY);
             if (stored) {
-                const parsed: TrackerItem[] = JSON.parse(stored).map((item: TrackerItem) =>
-                    item.type === TrackerType.ColdTurkey
-                        ? {
-                            ...item,
-                            notifiedMilestones: item.notifiedMilestones ?? [],
-                            resetHistory: item.resetHistory ?? [],
-                        }
-                        : item
-                );
+                const parsed: TrackerItem[] = JSON.parse(stored).map((item: TrackerItem) => ({
+                    ...item,
+                    notifiedMilestones: item.notifiedMilestones ?? [],
+                    resetHistory: item.resetHistory ?? [],
+                }));
                 setItems(parsed);
             } else {
                 setItems([]);

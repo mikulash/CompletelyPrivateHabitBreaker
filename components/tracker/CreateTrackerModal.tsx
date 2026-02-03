@@ -97,6 +97,7 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
                 name: trimmedName,
                 startedAt: date.toISOString(),
                 notifiedMilestones: [],
+                resetHistory: [],
                 type: TrackerType.SlowLoweringTheDosage,
                 currentUsageValue: Number.isFinite(amount) ? amount : 0,
                 currentUsageUnit: dosageUnit,
