@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
+import { M3Colors, M3Radius, M3Spacing, hexToRgba } from '@/constants/theme';
 import type { ColdTurkeyResetEntry } from '@/types/tracking';
 import { formatElapsedDurationLabel, getTrackingResetStats } from '@/utils/tracker';
 
@@ -24,7 +25,7 @@ export function TrackingStatsCard({ startedAt, resetHistory, accentColor }: Trac
     stats.maxBetweenResetsMs !== null ? formatElapsedDurationLabel(stats.maxBetweenResetsMs, 2) : 'N/A';
 
   return (
-    <View style={[styles.card, { borderColor: accentColor }]}>
+    <View style={[styles.card, { borderColor: hexToRgba(accentColor, 0.5) }]}>
       <Text style={styles.title}>Tracking stats</Text>
 
       <View style={styles.grid}>
@@ -51,35 +52,36 @@ export function TrackingStatsCard({ startedAt, resetHistory, accentColor }: Trac
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#18181f',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 24,
+    backgroundColor: M3Colors.surfaceContainer,
+    borderRadius: M3Radius.large,
+    padding: M3Spacing.lg,
+    marginBottom: M3Spacing.xxl,
     borderWidth: 1,
   },
   title: {
-    color: '#fff',
+    color: M3Colors.onSurface,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '500',
   },
   grid: {
-    marginTop: 12,
+    marginTop: M3Spacing.md,
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   statItem: {
     width: '50%',
-    paddingRight: 12,
-    marginBottom: 12,
+    paddingRight: M3Spacing.md,
+    marginBottom: M3Spacing.md,
   },
   statLabel: {
-    color: '#9ca3af',
+    color: M3Colors.onSurfaceVariant,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   statValue: {
-    marginTop: 4,
+    marginTop: M3Spacing.xs,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });
+

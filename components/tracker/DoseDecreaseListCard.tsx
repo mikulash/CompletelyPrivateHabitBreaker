@@ -1,12 +1,13 @@
 import { FontAwesome6 } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, TextInput } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
+import { M3Colors, M3Radius, M3Spacing, hexToRgba } from '@/constants/theme';
+import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 import { DoseDecreaseTrackedItem } from '@/types/tracking';
 import { calculateDaysTracked, formatDateForDisplay } from '@/utils/date';
 import { getTodaysDoseTotal, getTrackerIcon } from '@/utils/tracker';
-import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 
 type Props = {
   item: DoseDecreaseTrackedItem;
@@ -56,16 +57,17 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
     <TouchableOpacity
       accessibilityRole="button"
       onPress={onPress}
-      style={[styles.card, styles.doseCard]}
+      style={styles.card}
+      activeOpacity={0.7}
     >
       <View style={styles.header}>
         <Text style={styles.title}>{item.name}</Text>
-        <View style={[styles.iconContainer, styles.doseIcon]} accessible={false}>
-          <FontAwesome6 color={icon.color} name={icon.name} size={18} />
+        <View style={styles.iconContainer} accessible={false}>
+          <FontAwesome6 color={M3Colors.tertiary} name={icon.name} size={18} />
         </View>
       </View>
       <Text style={styles.subtitle}>Gradually reducing since {formatDateForDisplay(item.startedAt)}</Text>
-      <Text style={[styles.metaText, styles.doseMetaText]}>
+      <Text style={styles.metaText}>
         {`Today's total: ${formattedTotal} ${todayTotal.unit}`}
       </Text>
       <View style={styles.inputRow}>
@@ -73,7 +75,7 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
           value={doseInput}
           onChangeText={setDoseInput}
           placeholder={`Amount (${item.currentUsageUnit})`}
-          placeholderTextColor="#888"
+          placeholderTextColor={M3Colors.outline}
           style={[styles.input, { flex: 1, marginBottom: 0 }]}
           keyboardType="decimal-pad"
           inputMode="decimal"
@@ -85,6 +87,7 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
           disabled={!canLog}
           accessibilityRole="button"
           accessibilityLabel={`Log dose in ${item.currentUsageUnit}`}
+          activeOpacity={0.8}
         >
           <Text style={styles.logButtonText}>Log</Text>
         </TouchableOpacity>
@@ -93,13 +96,13 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
         value={noteInput}
         onChangeText={setNoteInput}
         placeholder="Note (optional)"
-        placeholderTextColor="#888"
-        style={[styles.input, { marginTop: 10 }]}
+        placeholderTextColor={M3Colors.outline}
+        style={[styles.input, { marginTop: M3Spacing.sm }]}
         accessibilityLabel="Optional note for this dose"
         returnKeyType="done"
       />
       {daysTracked !== null ? (
-        <Text style={[styles.metaText, styles.doseMetaText]}>
+        <Text style={styles.daysText}>
           {daysTracked} {daysTracked === 1 ? 'day' : 'days'} of progress
         </Text>
       ) : null}
@@ -109,77 +112,79 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#18181f',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 16,
-  },
-  doseCard: {
+    backgroundColor: M3Colors.surfaceContainer,
+    borderRadius: M3Radius.large,
+    padding: M3Spacing.lg,
+    marginBottom: M3Spacing.md,
     borderWidth: 1,
-    borderColor: '#fb923c',
+    borderColor: hexToRgba(M3Colors.tertiary, 0.3),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: M3Spacing.md,
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: '500',
+    color: M3Colors.onSurface,
     flexShrink: 1,
-    marginRight: 16,
+    marginRight: M3Spacing.lg,
   },
   iconContainer: {
-    backgroundColor: '#2f2f3b',
+    backgroundColor: hexToRgba(M3Colors.tertiary, 0.12),
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: M3Radius.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  doseIcon: {
-    backgroundColor: 'rgba(251, 146, 60, 0.15)',
-  },
   subtitle: {
-    color: '#bbb',
+    color: M3Colors.onSurfaceVariant,
     fontSize: 14,
   },
   metaText: {
-    marginTop: 12,
-    fontWeight: '600',
+    marginTop: M3Spacing.md,
+    fontWeight: '500',
     fontSize: 16,
-  },
-  doseMetaText: {
-    color: '#fb923c',
+    color: M3Colors.tertiary,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginTop: 12,
+    gap: M3Spacing.md,
+    marginTop: M3Spacing.md,
   },
   input: {
-    backgroundColor: '#2a2a35',
-    color: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    backgroundColor: M3Colors.surfaceContainerHigh,
+    color: M3Colors.onSurface,
+    borderRadius: M3Radius.medium,
+    paddingHorizontal: M3Spacing.lg,
+    paddingVertical: M3Spacing.md,
+    fontSize: 14,
   },
   logButton: {
-    backgroundColor: '#fb923c',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
+    backgroundColor: M3Colors.tertiary,
+    paddingHorizontal: M3Spacing.lg,
+    paddingVertical: M3Spacing.md,
+    borderRadius: M3Radius.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logButtonText: {
-    color: '#1f1f29',
-    fontWeight: '700',
+    color: M3Colors.onTertiary,
+    fontWeight: '500',
+    fontSize: 14,
   },
   disabledButton: {
-    opacity: 0.6,
+    opacity: 0.5,
+  },
+  daysText: {
+    marginTop: M3Spacing.md,
+    fontWeight: '500',
+    fontSize: 14,
+    color: M3Colors.onSurfaceVariant,
   },
 });
+

@@ -1,17 +1,18 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
-import {useFonts} from 'expo-font';
-import {Stack} from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import {useEffect} from 'react';
 import 'react-native-reanimated';
 
-import {useColorScheme} from '@/components/useColorScheme';
-import {TrackedItemsProvider} from '@/contexts/TrackedItemsContext';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+
+import { M3Colors } from '@/constants/theme';
+import { TrackedItemsProvider } from '@/contexts/TrackedItemsContext';
 
 export {
     // Catch any errors thrown by the Layout component.
-    ErrorBoundary,
+    ErrorBoundary
 } from 'expo-router';
 
 export const unstable_settings = {
@@ -21,9 +22,21 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-    const colorScheme = useColorScheme();
+// M3 customized dark theme
+const M3DarkTheme = {
+    ...DarkTheme,
+    colors: {
+        ...DarkTheme.colors,
+        primary: M3Colors.primary,
+        background: M3Colors.surface,
+        card: M3Colors.surfaceContainer,
+        text: M3Colors.onSurface,
+        border: M3Colors.outlineVariant,
+        notification: M3Colors.error,
+    },
+};
 
+export default function RootLayout() {
     const [loaded, error] = useFonts({
         SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
         ...FontAwesome.font,
@@ -44,16 +57,28 @@ export default function RootLayout() {
         return null;
     }
 
-   return (
-       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-           <TrackedItemsProvider>
-               <Stack>
-                   <Stack.Screen name="index" options={{headerShown: false}}/>
-                   <Stack.Screen name="tracker/[id]" options={{title: 'Tracker detail'}}/>
-                   <Stack.Screen name="modal" options={{presentation: 'modal'}}/>
-               </Stack>
-           </TrackedItemsProvider>
-       </ThemeProvider>
-   )
+    return (
+        <ThemeProvider value={M3DarkTheme}>
+            <TrackedItemsProvider>
+                <Stack
+                    screenOptions={{
+                        headerStyle: { backgroundColor: M3Colors.surface },
+                        headerTintColor: M3Colors.onSurface,
+                        headerShadowVisible: false,
+                        contentStyle: { backgroundColor: M3Colors.surface },
+                    }}
+                >
+                    <Stack.Screen name="index" options={{ headerShown: false }} />
+                    <Stack.Screen
+                        name="tracker/[id]"
+                        options={{
+                            title: 'Details',
+                            headerBackTitle: 'Back',
+                        }}
+                    />
+                    <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+                </Stack>
+            </TrackedItemsProvider>
+        </ThemeProvider>
+    )
 }
-

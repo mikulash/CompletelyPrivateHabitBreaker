@@ -1,18 +1,19 @@
-import {Feather} from '@expo/vector-icons';
-import {useRouter} from 'expo-router';
-import React, {useMemo, useState} from 'react';
-import {FlatList, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import {Text} from '@/components/Themed';
-import {ColdTurkeyListCard} from '@/components/tracker/ColdTurkeyListCard';
-import {CreateTrackerModal} from '@/components/tracker/CreateTrackerModal';
-import {DoseDecreaseListCard} from '@/components/tracker/DoseDecreaseListCard';
-import {useTrackedItems} from '@/contexts/TrackedItemsContext';
-import {TrackerType} from '@/enums/TrackerType';
-import type {TrackerItem} from '@/types/tracking';
+import { Text } from '@/components/Themed';
+import { ColdTurkeyListCard } from '@/components/tracker/ColdTurkeyListCard';
+import { CreateTrackerModal } from '@/components/tracker/CreateTrackerModal';
+import { DoseDecreaseListCard } from '@/components/tracker/DoseDecreaseListCard';
+import { M3Colors, M3Radius, M3Spacing } from '@/constants/theme';
+import { useTrackedItems } from '@/contexts/TrackedItemsContext';
+import { TrackerType } from '@/enums/TrackerType';
+import type { TrackerItem } from '@/types/tracking';
 
 export default function HomeScreen() {
-    const {items} = useTrackedItems();
+    const { items } = useTrackedItems();
     const router = useRouter();
     const [isModalVisible, setModalVisible] = useState(false);
     const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
@@ -21,7 +22,7 @@ export default function HomeScreen() {
         () => (
             <View style={styles.emptyContainer}>
                 <Text style={styles.emptyTitle}>No tracked items yet</Text>
-                <Text style={styles.emptySubtitle}>Tap the plus icon to start tracking.</Text>
+                <Text style={styles.emptySubtitle}>Tap the plus button to start tracking your progress.</Text>
             </View>
         ),
         []
@@ -44,8 +45,9 @@ export default function HomeScreen() {
                         accessibilityRole="button"
                         onPress={() => setModalVisible(true)}
                         style={styles.addButton}
+                        activeOpacity={0.8}
                     >
-                        <Feather name="plus" size={24} color="#fff"/>
+                        <Feather name="plus" size={24} color={M3Colors.onPrimary} />
                     </TouchableOpacity>
                 </View>
 
@@ -56,16 +58,16 @@ export default function HomeScreen() {
                     contentContainerStyle={styles.listContent}
                     keyboardShouldPersistTaps="handled"
                     ListEmptyComponent={listEmptyComponent}
-                    renderItem={({item}: { item: TrackerItem }) => {
-                        const handlePress = () => router.push({pathname: '/tracker/[id]', params: {id: item.id}});
+                    renderItem={({ item }: { item: TrackerItem }) => {
+                        const handlePress = () => router.push({ pathname: '/tracker/[id]', params: { id: item.id } });
                         if (item.type === TrackerType.ColdTurkey) {
-                            return <ColdTurkeyListCard item={item} onPress={handlePress}/>;
+                            return <ColdTurkeyListCard item={item} onPress={handlePress} />;
                         }
-                        return <DoseDecreaseListCard item={item} onPress={handlePress}/>;
+                        return <DoseDecreaseListCard item={item} onPress={handlePress} />;
                     }}
                 />
 
-                <CreateTrackerModal visible={isModalVisible} onClose={() => setModalVisible(false)}/>
+                <CreateTrackerModal visible={isModalVisible} onClose={() => setModalVisible(false)} />
             </View>
         </KeyboardAvoidingView>
     );
@@ -78,8 +80,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingTop: 60,
-        paddingHorizontal: 20,
-        backgroundColor: '#0b0b0f',
+        paddingHorizontal: M3Spacing.xl,
+        backgroundColor: M3Colors.surface,
     },
     header: {
         flexDirection: 'row',
@@ -88,39 +90,46 @@ const styles = StyleSheet.create({
     },
     heading: {
         fontSize: 28,
-        fontWeight: '700',
-        color: '#fff',
+        fontWeight: '500',
+        color: M3Colors.onSurface,
+        letterSpacing: 0,
     },
     subheading: {
-        marginTop: 4,
+        marginTop: M3Spacing.xs,
         fontSize: 14,
-        color: '#ccc',
+        color: M3Colors.onSurfaceVariant,
     },
     addButton: {
-        backgroundColor: '#4c6ef5',
-        height: 44,
-        width: 44,
-        borderRadius: 22,
+        backgroundColor: M3Colors.primary,
+        height: 56,
+        width: 56,
+        borderRadius: M3Radius.large,
         alignItems: 'center',
         justifyContent: 'center',
+        elevation: 3,
+        shadowColor: M3Colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
     },
     listContent: {
-        paddingVertical: 30,
+        paddingVertical: M3Spacing.xxl,
         paddingBottom: 40,
     },
     emptyContainer: {
-        width: 260,
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: 20,
+        paddingVertical: M3Spacing.xxl,
     },
     emptyTitle: {
         fontSize: 18,
-        fontWeight: '600',
-        color: '#fff',
+        fontWeight: '500',
+        color: M3Colors.onSurface,
     },
     emptySubtitle: {
-        marginTop: 8,
-        color: '#ccc',
+        marginTop: M3Spacing.sm,
+        fontSize: 14,
+        color: M3Colors.onSurfaceVariant,
+        lineHeight: 20,
     },
 });

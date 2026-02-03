@@ -5,6 +5,7 @@ import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ColdTurkeyDetail } from '@/components/tracker/details/ColdTurkeyDetail';
 import { DoseDecreaseDetail } from '@/components/tracker/details/DoseDecreaseDetail';
+import { M3Colors, M3Radius, M3Spacing } from '@/constants/theme';
 import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 import { TrackerType } from '@/enums/TrackerType';
 import type { TrackerItem } from '@/types/tracking';
@@ -119,9 +120,9 @@ export default function TrackerDetailScreen() {
   const header = (
     <Stack.Screen
       options={{
-        title: "DETAIL",
-        headerStyle: { backgroundColor: '#0b0b0f' },
-        headerTintColor: '#fff',
+        title: "Details",
+        headerStyle: { backgroundColor: M3Colors.surface },
+        headerTintColor: M3Colors.onSurface,
         headerShadowVisible: false,
       }}
     />
@@ -166,33 +167,35 @@ export default function TrackerDetailScreen() {
 
 const styles = StyleSheet.create({
   primaryButton: {
-    backgroundColor: '#4c6ef5',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
+    backgroundColor: M3Colors.primary,
+    paddingVertical: M3Spacing.md,
+    paddingHorizontal: M3Spacing.xl,
+    borderRadius: M3Radius.medium,
   },
   primaryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: M3Colors.onPrimary,
+    fontWeight: '500',
+    fontSize: 14,
   },
   centeredContainer: {
     flex: 1,
-    backgroundColor: '#0b0b0f',
+    backgroundColor: M3Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: M3Spacing.xxl,
   },
   missingTitle: {
-    color: '#fff',
+    color: M3Colors.onSurface,
     fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontWeight: '500',
+    marginBottom: M3Spacing.sm,
     textAlign: 'center',
   },
   missingSubtitle: {
-    color: '#ccc',
-    fontSize: 16,
-    marginBottom: 24,
+    color: M3Colors.onSurfaceVariant,
+    fontSize: 14,
+    marginBottom: M3Spacing.xxl,
     textAlign: 'center',
+    lineHeight: 20,
   },
 });

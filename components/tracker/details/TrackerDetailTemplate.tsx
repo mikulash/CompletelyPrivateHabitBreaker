@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
+import { M3Colors, M3Radius, M3Spacing } from '@/constants/theme';
 
 type TrackerDetailTemplateProps<ItemType> = {
   item: ItemType;
@@ -40,26 +41,26 @@ export function TrackerDetailTemplate<ItemType>({
           value={nameInput}
           onChangeText={onNameChange}
           placeholder="What are you tracking?"
-          placeholderTextColor="#888"
+          placeholderTextColor={M3Colors.outline}
           style={styles.input}
         />
-
 
         <View style={styles.sectionActions}>
           <TouchableOpacity
             style={[styles.primaryButton, disableSave && styles.disabledButton]}
             onPress={onSave}
             disabled={disableSave}
+            activeOpacity={0.8}
           >
             <Text style={styles.primaryButtonText}>{saveLabel}</Text>
           </TouchableOpacity>
 
           <View style={styles.secondaryActions}>
-            <TouchableOpacity style={styles.resetButton} onPress={onResetDate}>
-              <Text style={styles.secondaryButtonText}>Reset start date</Text>
+            <TouchableOpacity style={styles.resetButton} onPress={onResetDate} activeOpacity={0.7}>
+              <Text style={styles.secondaryButtonText}>Reset date</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
-              <Text style={styles.secondaryButtonText}>Delete tracker</Text>
+            <TouchableOpacity style={styles.deleteButton} onPress={onDelete} activeOpacity={0.7}>
+              <Text style={styles.deleteButtonText}>Delete</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -70,83 +71,83 @@ export function TrackerDetailTemplate<ItemType>({
 
 const styles = StyleSheet.create({
   scrollContent: {
-    padding: 24,
+    padding: M3Spacing.xxl,
     paddingBottom: 48,
-    backgroundColor: '#0b0b0f',
+    backgroundColor: M3Colors.surface,
     minHeight: '100%',
   },
   section: {
-    backgroundColor: '#18181f',
-    borderRadius: 20,
-    padding: 20,
-    gap: 16,
+    backgroundColor: M3Colors.surfaceContainer,
+    borderRadius: M3Radius.large,
+    padding: M3Spacing.xl,
+    gap: M3Spacing.lg,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: '500',
+    color: M3Colors.onSurface,
   },
   inputLabel: {
-    color: '#ccc',
-    fontSize: 14,
+    color: M3Colors.onSurfaceVariant,
+    fontSize: 12,
+    fontWeight: '500',
   },
   input: {
-    backgroundColor: '#2a2a35',
-    color: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  readonlyField: {
-    backgroundColor: '#2a2a35',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  readonlyText: {
-    color: '#fff',
-    fontWeight: '600',
+    backgroundColor: M3Colors.surfaceContainerHigh,
+    color: M3Colors.onSurface,
+    borderRadius: M3Radius.medium,
+    paddingHorizontal: M3Spacing.lg,
+    paddingVertical: M3Spacing.md,
+    fontSize: 14,
   },
   sectionActions: {
-    gap: 16,
+    gap: M3Spacing.lg,
+    marginTop: M3Spacing.sm,
   },
   primaryButton: {
-    backgroundColor: '#4c6ef5',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
+    backgroundColor: M3Colors.primary,
+    paddingVertical: M3Spacing.md,
+    paddingHorizontal: M3Spacing.xl,
+    borderRadius: M3Radius.medium,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    textAlign: 'center',
+    color: M3Colors.onPrimary,
+    fontWeight: '500',
+    fontSize: 14,
   },
   secondaryActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: M3Spacing.md,
   },
   resetButton: {
     flex: 1,
-    backgroundColor: '#fa834cff',
-    paddingVertical: 12,
-    borderRadius: 12,
+    backgroundColor: M3Colors.tertiaryContainer,
+    paddingVertical: M3Spacing.md,
+    borderRadius: M3Radius.medium,
     alignItems: 'center',
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: '#d64545',
-    paddingVertical: 12,
-    borderRadius: 12,
+    backgroundColor: M3Colors.errorContainer,
+    paddingVertical: M3Spacing.md,
+    borderRadius: M3Radius.medium,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: M3Colors.onTertiaryContainer,
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  deleteButtonText: {
+    color: M3Colors.onErrorContainer,
+    fontWeight: '500',
+    fontSize: 14,
   },
   disabledButton: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
 });
+
 

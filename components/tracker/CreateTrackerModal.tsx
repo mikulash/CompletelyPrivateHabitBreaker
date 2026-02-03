@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 
 import { Text } from '@/components/Themed';
+import { M3Colors, M3Radius, M3Spacing, hexToRgba } from '@/constants/theme';
 import { TRACKER_TYPES } from '@/constants/trackerTypes';
 import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 import { TrackerType } from '@/enums/TrackerType';
+import { ColdTurkeyTrackedItem, DosageUnit, DoseDecreaseTrackedItem } from '@/types/tracking';
 import { formatDateForDisplay } from '@/utils/date';
-import { ColdTurkeyTrackedItem, DoseDecreaseTrackedItem, DosageUnit } from '@/types/tracking';
 
 type CreateTrackerModalProps = {
     visible: boolean;
@@ -164,7 +165,7 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
                         })}
                     </View>
 
-                                        {selectedType === TrackerType.SlowLoweringTheDosage ? (
+                    {selectedType === TrackerType.SlowLoweringTheDosage ? (
                         <>
                             <Text style={styles.inputLabel}>Current regular usage</Text>
                             <View style={styles.usageRow}>
@@ -216,126 +217,134 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
 const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: hexToRgba(M3Colors.scrim, 0.6),
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 24,
+        padding: M3Spacing.xxl,
     },
     modalContent: {
-        backgroundColor: '#1f1f29',
-        borderRadius: 20,
+        backgroundColor: M3Colors.surfaceContainerHigh,
+        borderRadius: M3Radius.extraLarge,
         width: '100%',
-        padding: 24,
+        padding: M3Spacing.xxl,
     },
     modalTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#fff',
-        marginBottom: 20,
+        fontSize: 22,
+        fontWeight: '500',
+        color: M3Colors.onSurface,
+        marginBottom: M3Spacing.xl,
     },
     inputLabel: {
-        color: '#ccc',
-        fontSize: 14,
-        marginBottom: 6,
+        color: M3Colors.onSurfaceVariant,
+        fontSize: 12,
+        fontWeight: '500',
+        marginBottom: M3Spacing.xs,
     },
     input: {
-        backgroundColor: '#2a2a35',
-        color: '#fff',
-        borderRadius: 12,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        marginBottom: 16,
+        backgroundColor: M3Colors.surfaceContainer,
+        color: M3Colors.onSurface,
+        borderRadius: M3Radius.medium,
+        paddingHorizontal: M3Spacing.lg,
+        paddingVertical: M3Spacing.md,
+        marginBottom: M3Spacing.lg,
+        fontSize: 14,
     },
     dateButton: {
-        backgroundColor: '#2a2a35',
-        borderRadius: 12,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
+        backgroundColor: M3Colors.surfaceContainer,
+        borderRadius: M3Radius.medium,
+        paddingHorizontal: M3Spacing.lg,
+        paddingVertical: M3Spacing.md,
     },
     dateButtonText: {
-        color: '#fff',
-        fontWeight: '600',
+        color: M3Colors.onSurface,
+        fontWeight: '500',
         textAlign: 'center',
+        fontSize: 14,
     },
     typeSelector: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 24,
+        marginBottom: M3Spacing.xl,
     },
     typeOption: {
         flex: 1,
-        paddingVertical: 12,
-        marginRight: 12,
-        borderRadius: 12,
-        backgroundColor: '#2a2a35',
+        paddingVertical: M3Spacing.md,
+        marginRight: M3Spacing.md,
+        borderRadius: M3Radius.medium,
+        backgroundColor: M3Colors.surfaceContainer,
         alignItems: 'center',
     },
     typeOptionLast: {
         marginRight: 0,
     },
     typeOptionSelected: {
-        backgroundColor: '#4c6ef5',
+        backgroundColor: M3Colors.primaryContainer,
     },
     typeOptionText: {
-        color: '#ccc',
-        fontWeight: '600',
+        color: M3Colors.onSurfaceVariant,
+        fontWeight: '500',
+        fontSize: 13,
     },
     typeOptionTextSelected: {
-        color: '#fff',
+        color: M3Colors.onPrimaryContainer,
     },
     usageRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
-        marginBottom: 16,
+        gap: M3Spacing.md,
+        marginBottom: M3Spacing.lg,
     },
     unitSelector: {
         flexDirection: 'row',
-        gap: 8,
+        gap: M3Spacing.sm,
     },
     unitOption: {
-        backgroundColor: '#2a2a35',
-        borderRadius: 12,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
+        backgroundColor: M3Colors.surfaceContainer,
+        borderRadius: M3Radius.medium,
+        paddingVertical: M3Spacing.md,
+        paddingHorizontal: M3Spacing.lg,
         alignItems: 'center',
         justifyContent: 'center',
     },
     unitOptionSelected: {
-        backgroundColor: '#4c6ef5',
+        backgroundColor: M3Colors.secondaryContainer,
     },
     unitOptionText: {
-        color: '#ccc',
-        fontWeight: '600',
+        color: M3Colors.onSurfaceVariant,
+        fontWeight: '500',
+        fontSize: 14,
     },
     unitOptionTextSelected: {
-        color: '#fff',
+        color: M3Colors.onSecondaryContainer,
     },
     modalActions: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
+        marginTop: M3Spacing.lg,
     },
     modalButton: {
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 12,
-        marginLeft: 12,
+        paddingVertical: M3Spacing.md,
+        paddingHorizontal: M3Spacing.lg,
+        borderRadius: M3Radius.medium,
+        marginLeft: M3Spacing.sm,
     },
     cancelButton: {
-        backgroundColor: '#2a2a35',
+        backgroundColor: 'transparent',
     },
     saveButton: {
-        backgroundColor: '#4c6ef5',
+        backgroundColor: M3Colors.primary,
+        paddingHorizontal: M3Spacing.xxl,
     },
     disabledButton: {
-        opacity: 0.6,
+        opacity: 0.5,
     },
     modalButtonText: {
-        color: '#fff',
-        fontWeight: '600',
+        color: M3Colors.primary,
+        fontWeight: '500',
+        fontSize: 14,
     },
     saveButtonText: {
-        color: '#fff',
+        color: M3Colors.onPrimary,
     },
 });
 

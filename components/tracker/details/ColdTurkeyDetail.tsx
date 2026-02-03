@@ -13,8 +13,10 @@ import {
     getTrackerIcon,
 } from '@/utils/tracker';
 
+import { M3Colors, M3Radius, M3Spacing, hexToRgba } from '@/constants/theme';
 import { TrackerDetailTemplate } from './TrackerDetailTemplate';
 import { TrackingStatsCard } from './TrackingStatsCard';
+
 
 type ColdTurkeyDetailProps = {
     item: ColdTurkeyTrackedItem;
@@ -65,10 +67,10 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                         label: 'Going longer than last time',
                         durationMs: lastDurationMs || progress.elapsedMs,
                         color: {
-                            border: '#facc15',
-                            bg: 'rgba(250, 204, 21, 0.16)',
-                            iconBg: 'rgba(250, 204, 21, 0.22)',
-                            text: '#fef3c7',
+                            border: M3Colors.tertiary,
+                            bg: hexToRgba(M3Colors.tertiary, 0.16),
+                            iconBg: hexToRgba(M3Colors.tertiary, 0.22),
+                            text: M3Colors.onTertiaryContainer,
                         },
                     });
                 }
@@ -77,10 +79,10 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                         label: 'Record time',
                         durationMs: recordDurationMs || progress.elapsedMs,
                         color: {
-                            border: '#fbbf24',
-                            bg: 'rgba(251, 191, 36, 0.18)',
-                            iconBg: 'rgba(251, 191, 36, 0.24)',
-                            text: '#fef9c3',
+                            border: M3Colors.tertiary,
+                            bg: hexToRgba(M3Colors.tertiary, 0.18),
+                            iconBg: hexToRgba(M3Colors.tertiary, 0.24),
+                            text: M3Colors.onTertiaryContainer,
                         },
                     });
                 }
@@ -112,178 +114,175 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                 });
 
                 const currentDuration = formatElapsedDurationLabel(progress.elapsedMs);
-                const currentSubtitle = `${formatDateForDisplay(item.startedAt)} - Present${
-                    currentDuration ? ` - ${currentDuration}${currentDuration === 'Less than a second' ? '' : ' so far'}` : ''
-                }`;
+                const currentSubtitle = `${formatDateForDisplay(item.startedAt)} - Present${currentDuration ? ` - ${currentDuration}${currentDuration === 'Less than a second' ? '' : ' so far'}` : ''
+                    }`;
 
                 return (
                     <>
                         <TrackingStatsCard
                             startedAt={item.startedAt}
                             resetHistory={item.resetHistory}
-                            accentColor={icon.color}
+                            accentColor={M3Colors.primary}
                         />
                         <View style={[styles.summaryCard, styles.coldSummary]}>
-                        <View style={styles.summaryHeader}>
-                            <Text style={styles.summaryTitle}>{item.name}</Text>
-                            <View style={[styles.summaryIcon, styles.coldIcon]}>
-                                <FontAwesome6 color={icon.color} name={icon.name} size={32} />
+                            <View style={styles.summaryHeader}>
+                                <Text style={styles.summaryTitle}>{item.name}</Text>
+                                <View style={[styles.summaryIcon, styles.coldIcon]}>
+                                    <FontAwesome6 color={icon.color} name={icon.name} size={32} />
+                                </View>
                             </View>
-                        </View>
 
-                        <Text style={styles.summarySubtitle}>Cold turkey commitment</Text>
+                            <Text style={styles.summarySubtitle}>Cold turkey commitment</Text>
 
-                        <View style={styles.breakdownStack}>
-                            {breakdown.map((entry, index) => (
-                                <Text key={`${entry.unit}-${index}`} style={[styles.breakdownRow, styles.coldHighlight]}>
-                                    {entry.value} {entry.unit}
+                            <View style={styles.breakdownStack}>
+                                {breakdown.map((entry, index) => (
+                                    <Text key={`${entry.unit}-${index}`} style={[styles.breakdownRow, styles.coldHighlight]}>
+                                        {entry.value} {entry.unit}
+                                    </Text>
+                                ))}
+                            </View>
+
+                            {/* Stepper-style progress */}
+                            <View style={styles.stepperContainer} accessibilityLabel="Progress timeline">
+                                <View style={styles.stepperLine} />
+                                <View style={[styles.stepperFillLine, { width: `${Math.round(progressPercent * 100)}%` }]} />
+                                <View style={[styles.stepperDot, styles.stepperDotLeft]}>
+                                    <View style={styles.stepperDotInner} />
+                                </View>
+                                <View style={[styles.stepperDot, styles.stepperDotRight]}>
+                                    <View style={styles.stepperDotInner} />
+                                </View>
+                            </View>
+                            <View style={styles.stepperLabels}>
+                                <Text style={styles.stepperLabel}>{formatDateForDisplay(item.startedAt)}</Text>
+                                <Text style={[styles.stepperLabel, styles.stepperLabelRight]}>
+                                    {progress.next ? progress.next.label : 'All milestones achieved'}
                                 </Text>
-                            ))}
-                        </View>
-
-                        {/* Stepper-style progress */}
-                        <View style={styles.stepperContainer} accessibilityLabel="Progress timeline">
-                            <View style={styles.stepperLine} />
-                            <View style={[styles.stepperFillLine, { width: `${Math.round(progressPercent * 100)}%` }]} />
-                            <View style={[styles.stepperDot, styles.stepperDotLeft]}>
-                                <View style={styles.stepperDotInner} />
                             </View>
-                            <View style={[styles.stepperDot, styles.stepperDotRight]}>
-                                <View style={styles.stepperDotInner} />
-                            </View>
-                        </View>
-                        <View style={styles.stepperLabels}>
-                            <Text style={styles.stepperLabel}>{formatDateForDisplay(item.startedAt)}</Text>
-                            <Text style={[styles.stepperLabel, styles.stepperLabelRight]}>
-                                {progress.next ? progress.next.label : 'All milestones achieved'}
-                            </Text>
-                        </View>
 
-                        {hasLastTarget ? (
-                            <View style={styles.streakProgressSection}>
-                                {shouldShowLastProgressBar ? (
-                                    <View style={[styles.streakProgressBar, styles.lastProgressBar]}>
-                                        <View
-                                            style={[
-                                                styles.streakProgressFill,
-                                                styles.lastProgressFill,
-                                                { width: `${Math.round(Math.min(1, lastProgress) * 100)}%` },
-                                            ]}
-                                        />
-                                    </View>
-                                ) : null}
-
-                                {/* Inline label + trophy when beaten */}
-                                <View style={styles.inlineRow}>
-                                    <Text style={styles.streakProgressLabel}>
-                                        {hasGoneLonger
-                                            ? `Beat last streak (${lastDurationLabel})`
-                                            : `Beat last streak (${lastDurationLabel})${
-                                                lastTimeLeftLabel ? ` | ${lastTimeLeftLabel} left` : ''
-                                            }`}
-                                    </Text>
-                                    {hasGoneLonger ? <FontAwesome6 name="trophy" size={14} color="#facc15" /> : null}
-                                </View>
-                            </View>
-                        ) : null}
-
-                        {shouldShowRecordProgress ? (
-                            <View style={styles.streakProgressSection}>
-                                {shouldShowRecordProgressBar ? (
-                                    <View style={[styles.streakProgressBar, styles.recordProgressBar]}>
-                                        <View
-                                            style={[
-                                                styles.streakProgressFill,
-                                                styles.recordProgressFill,
-                                                { width: `${Math.round(Math.min(1, recordProgress) * 100)}%` },
-                                            ]}
-                                        />
-                                    </View>
-                                ) : null}
-
-                                {/* Inline label + trophy when record hit */}
-                                <View style={styles.inlineRow}>
-                                    <Text style={[styles.streakProgressLabel, styles.recordProgressLabel]}>
-                                        {hasHitRecord
-                                            ? `Record streak (${recordDurationLabel})`
-                                            : `Record streak (${recordDurationLabel})${
-                                                recordTimeLeftLabel ? ` | ${recordTimeLeftLabel} left` : ''
-                                            }`}
-                                    </Text>
-                                    {hasHitRecord ? <FontAwesome6 name="trophy" size={14} color="#fde047" /> : null}
-                                </View>
-                            </View>
-                        ) : null}
-
-                        {hasMilestones ? (
-                            <View style={styles.milestonesSection}>
-                                <View style={styles.milestonesTitleRow}>
-                                    <Text style={styles.milestonesTitle}>Milestones achieved</Text>
-                                    <FontAwesome6 name="trophy" size={14} color="#60a5fa" />
-                                </View>
-                                <ScrollView
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={styles.milestonesList}
-                                >
-                                    {milestoneChips.map((milestone, idx) => {
-                                        const isLatest = idx === milestoneChips.length - 1;
-                                        const iconName = milestone.label === 'Record time' ? 'medal' : 'trophy';
-                                        const c =
-                                            milestone.color ??
-                                            {
-                                                border: '#60a5fa',
-                                                bg: 'rgba(96, 165, 250, 0.16)',
-                                                iconBg: 'rgba(96, 165, 250, 0.22)',
-                                                text: '#dbeafe',
-                                            };
-                                        return (
+                            {hasLastTarget ? (
+                                <View style={styles.streakProgressSection}>
+                                    {shouldShowLastProgressBar ? (
+                                        <View style={[styles.streakProgressBar, styles.lastProgressBar]}>
                                             <View
-                                                key={`${milestone.label}-${idx}`}
                                                 style={[
-                                                    styles.milestoneChip,
-                                                    isLatest && styles.milestoneChipLatest,
-                                                    { backgroundColor: c.bg, borderColor: c.border, shadowColor: c.border },
+                                                    styles.streakProgressFill,
+                                                    styles.lastProgressFill,
+                                                    { width: `${Math.round(Math.min(1, lastProgress) * 100)}%` },
                                                 ]}
-                                                accessibilityLabel={`Achieved milestone: ${milestone.label}`}
-                                            >
-                                                <View
-                                                    style={[
-                                                        styles.milestoneIconWrap,
-                                                        { backgroundColor: c.iconBg, borderColor: c.border },
-                                                    ]}
-                                                >
-                                                    <FontAwesome6 name={iconName} size={12} color={c.border} />
-                                                </View>
-                                                <Text style={[styles.milestoneChipText, { color: c.text }]}>{milestone.label}</Text>
-                                            </View>
-                                        );
-                                    })}
-                                </ScrollView>
-                            </View>
-                        ) : null}
+                                            />
+                                        </View>
+                                    ) : null}
 
-                        <View style={styles.resetHistorySection}>
-                            <View style={styles.resetHistoryHeader}>
-                                <FontAwesome6 name="clock-rotate-left" size={14} color="#6ee7b7" />
-                                <Text style={styles.resetHistoryTitle}>Reset timeline</Text>
-                            </View>
-
-                            <View style={styles.resetTimeline}>
-                                <View style={styles.resetRow}>
-                                    <View style={[styles.resetRowBullet, styles.resetRowBulletCurrent]} />
-                                    <View style={styles.resetRowContent}>
-                                        <Text style={styles.resetRowTitle}>Current streak</Text>
-                                        <Text style={styles.resetRowSubtitle}>{currentSubtitle}</Text>
+                                    {/* Inline label + trophy when beaten */}
+                                    <View style={styles.inlineRow}>
+                                        <Text style={styles.streakProgressLabel}>
+                                            {hasGoneLonger
+                                                ? `Beat last streak (${lastDurationLabel})`
+                                                : `Beat last streak (${lastDurationLabel})${lastTimeLeftLabel ? ` | ${lastTimeLeftLabel} left` : ''
+                                                }`}
+                                        </Text>
+                                        {hasGoneLonger ? <FontAwesome6 name="trophy" size={14} color="#facc15" /> : null}
                                     </View>
                                 </View>
-                                {resetRows}
-                            </View>
-
-                            {resetRows.length === 0 ? (
-                                <Text style={styles.resetHistoryEmptyText}>No previous resets logged yet.</Text>
                             ) : null}
-                        </View>
+
+                            {shouldShowRecordProgress ? (
+                                <View style={styles.streakProgressSection}>
+                                    {shouldShowRecordProgressBar ? (
+                                        <View style={[styles.streakProgressBar, styles.recordProgressBar]}>
+                                            <View
+                                                style={[
+                                                    styles.streakProgressFill,
+                                                    styles.recordProgressFill,
+                                                    { width: `${Math.round(Math.min(1, recordProgress) * 100)}%` },
+                                                ]}
+                                            />
+                                        </View>
+                                    ) : null}
+
+                                    {/* Inline label + trophy when record hit */}
+                                    <View style={styles.inlineRow}>
+                                        <Text style={[styles.streakProgressLabel, styles.recordProgressLabel]}>
+                                            {hasHitRecord
+                                                ? `Record streak (${recordDurationLabel})`
+                                                : `Record streak (${recordDurationLabel})${recordTimeLeftLabel ? ` | ${recordTimeLeftLabel} left` : ''
+                                                }`}
+                                        </Text>
+                                        {hasHitRecord ? <FontAwesome6 name="trophy" size={14} color="#fde047" /> : null}
+                                    </View>
+                                </View>
+                            ) : null}
+
+                            {hasMilestones ? (
+                                <View style={styles.milestonesSection}>
+                                    <View style={styles.milestonesTitleRow}>
+                                        <Text style={styles.milestonesTitle}>Milestones achieved</Text>
+                                        <FontAwesome6 name="trophy" size={14} color="#60a5fa" />
+                                    </View>
+                                    <ScrollView
+                                        horizontal
+                                        showsHorizontalScrollIndicator={false}
+                                        contentContainerStyle={styles.milestonesList}
+                                    >
+                                        {milestoneChips.map((milestone, idx) => {
+                                            const isLatest = idx === milestoneChips.length - 1;
+                                            const iconName = milestone.label === 'Record time' ? 'medal' : 'trophy';
+                                            const c =
+                                                milestone.color ??
+                                                {
+                                                    border: '#60a5fa',
+                                                    bg: 'rgba(96, 165, 250, 0.16)',
+                                                    iconBg: 'rgba(96, 165, 250, 0.22)',
+                                                    text: '#dbeafe',
+                                                };
+                                            return (
+                                                <View
+                                                    key={`${milestone.label}-${idx}`}
+                                                    style={[
+                                                        styles.milestoneChip,
+                                                        isLatest && styles.milestoneChipLatest,
+                                                        { backgroundColor: c.bg, borderColor: c.border, shadowColor: c.border },
+                                                    ]}
+                                                    accessibilityLabel={`Achieved milestone: ${milestone.label}`}
+                                                >
+                                                    <View
+                                                        style={[
+                                                            styles.milestoneIconWrap,
+                                                            { backgroundColor: c.iconBg, borderColor: c.border },
+                                                        ]}
+                                                    >
+                                                        <FontAwesome6 name={iconName} size={12} color={c.border} />
+                                                    </View>
+                                                    <Text style={[styles.milestoneChipText, { color: c.text }]}>{milestone.label}</Text>
+                                                </View>
+                                            );
+                                        })}
+                                    </ScrollView>
+                                </View>
+                            ) : null}
+
+                            <View style={styles.resetHistorySection}>
+                                <View style={styles.resetHistoryHeader}>
+                                    <FontAwesome6 name="clock-rotate-left" size={14} color="#6ee7b7" />
+                                    <Text style={styles.resetHistoryTitle}>Reset timeline</Text>
+                                </View>
+
+                                <View style={styles.resetTimeline}>
+                                    <View style={styles.resetRow}>
+                                        <View style={[styles.resetRowBullet, styles.resetRowBulletCurrent]} />
+                                        <View style={styles.resetRowContent}>
+                                            <Text style={styles.resetRowTitle}>Current streak</Text>
+                                            <Text style={styles.resetRowSubtitle}>{currentSubtitle}</Text>
+                                        </View>
+                                    </View>
+                                    {resetRows}
+                                </View>
+
+                                {resetRows.length === 0 ? (
+                                    <Text style={styles.resetHistoryEmptyText}>No previous resets logged yet.</Text>
+                                ) : null}
+                            </View>
                         </View>
                     </>
                 );
@@ -294,60 +293,60 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
 
 const styles = StyleSheet.create({
     summaryCard: {
-        backgroundColor: '#18181f',
-        borderRadius: 20,
-        padding: 20,
-        marginBottom: 24,
+        backgroundColor: M3Colors.surfaceContainer,
+        borderRadius: M3Radius.large,
+        padding: M3Spacing.xl,
+        marginBottom: M3Spacing.xxl,
     },
     coldSummary: {
         borderWidth: 1,
-        borderColor: 'rgba(52, 211, 153, 0.5)',
+        borderColor: hexToRgba(M3Colors.primary, 0.4),
     },
     summaryHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: M3Spacing.md,
     },
     summaryTitle: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#fff',
+        fontSize: 22,
+        fontWeight: '500',
+        color: M3Colors.onSurface,
         flexShrink: 1,
-        marginRight: 16,
+        marginRight: M3Spacing.lg,
     },
     summaryIcon: {
         width: 56,
         height: 56,
-        borderRadius: 28,
+        borderRadius: M3Radius.extraLarge,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#2f2f3b',
+        backgroundColor: hexToRgba(M3Colors.primary, 0.12),
     },
     coldIcon: {
-        backgroundColor: 'rgba(52, 211, 153, 0.15)',
+        backgroundColor: hexToRgba(M3Colors.primary, 0.15),
     },
     summarySubtitle: {
-        color: '#6ee7b7',
-        fontSize: 16,
-        fontWeight: '600',
+        color: M3Colors.primary,
+        fontSize: 14,
+        fontWeight: '500',
     },
     summaryMeta: {
-        color: '#bbb',
-        marginTop: 6,
+        color: M3Colors.onSurfaceVariant,
+        marginTop: M3Spacing.xs,
         fontSize: 14,
     },
     summaryHighlight: {
-        marginTop: 12,
+        marginTop: M3Spacing.md,
         fontSize: 18,
-        fontWeight: '700',
+        fontWeight: '600',
     },
     coldHighlight: {
-        color: '#34d399',
+        color: M3Colors.primary,
     },
     breakdownStack: {
-        marginTop: 12,
-        gap: 4,
+        marginTop: M3Spacing.md,
+        gap: M3Spacing.xs,
     },
     breakdownRow: {
         fontSize: 16,

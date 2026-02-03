@@ -1,11 +1,12 @@
-﻿import {FontAwesome6} from '@expo/vector-icons';
+﻿import { FontAwesome6 } from '@expo/vector-icons';
 import React from 'react';
-import {StyleSheet, TouchableOpacity, View, Text as RNText} from 'react-native';
+import { Text as RNText, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import {Text} from '@/components/Themed';
-import {useElapsedBreakdown} from '@/hooks/useElapsedBreakdown';
-import {ColdTurkeyTrackedItem} from '@/types/tracking';
-import {formatDateForDisplay, formatTimeLeft} from '@/utils/date';
+import { Text } from '@/components/Themed';
+import { hexToRgba, M3Colors, M3Radius, M3Spacing } from '@/constants/theme';
+import { useElapsedBreakdown } from '@/hooks/useElapsedBreakdown';
+import { ColdTurkeyTrackedItem } from '@/types/tracking';
+import { formatDateForDisplay, formatTimeLeft } from '@/utils/date';
 import {
     formatElapsedDurationLabel,
     getColdTurkeyProgress,
@@ -18,7 +19,7 @@ type Props = {
     onPress: () => void;
 };
 
-export function ColdTurkeyListCard({item, onPress}: Props) {
+export function ColdTurkeyListCard({ item, onPress }: Props) {
     const icon = getTrackerIcon(item.type);
     const progress = getColdTurkeyProgress(item.startedAt);
     const breakdown = useElapsedBreakdown(item.startedAt);
@@ -32,10 +33,10 @@ export function ColdTurkeyListCard({item, onPress}: Props) {
         progress.next ? formatTimeLeft(Math.max(0, progress.next.durationMs - elapsedMs)) : null;
 
     const nextLabel = progress.next
-        ? `Next milestone: ${progress.next.label}${timeLeft ? ` (in ${timeLeft})` : ''}`
+        ? `Next: ${progress.next.label}${timeLeft ? ` (${timeLeft})` : ''}`
         : 'All milestones achieved';
 
-    const {last, record} = getColdTurkeyStreakTargets(item.resetHistory);
+    const { last, record } = getColdTurkeyStreakTargets(item.resetHistory);
     const lastDurationMs = last?.durationMs ?? 0;
     const hasLastTarget = lastDurationMs > 0;
     const lastProgress = hasLastTarget ? Math.min(1, elapsedMs / lastDurationMs) : 0;
@@ -59,12 +60,13 @@ export function ColdTurkeyListCard({item, onPress}: Props) {
         <TouchableOpacity
             accessibilityRole="button"
             onPress={onPress}
-            style={[styles.card, styles.coldCard]}
+            style={styles.card}
+            activeOpacity={0.7}
         >
             <View style={styles.header}>
                 <Text style={styles.title}>{item.name}</Text>
-                <View style={[styles.iconContainer, styles.coldIcon]} accessible={false}>
-                    <FontAwesome6 color={icon.color} name={icon.name} size={18}/>
+                <View style={styles.iconContainer} accessible={false}>
+                    <FontAwesome6 color={M3Colors.primary} name={icon.name} size={18} />
                 </View>
             </View>
 
@@ -74,15 +76,15 @@ export function ColdTurkeyListCard({item, onPress}: Props) {
                 {breakdown.map((entry, i) => (
                     <React.Fragment key={`${entry.unit}-${i}`}>
                         <RNText style={styles.breakdownNumber}>{entry.value}</RNText>
-                        <RNText>{` ${entry.unit}`}</RNText>
-                        {i < breakdown.length - 1 ? <RNText>{' | '}</RNText> : null}
+                        <RNText style={styles.breakdownUnit}>{` ${entry.unit}`}</RNText>
+                        {i < breakdown.length - 1 ? <RNText style={styles.breakdownSeparator}>{' · '}</RNText> : null}
                     </React.Fragment>
                 ))}
             </RNText>
 
             <View style={styles.progressContainer}>
                 <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, {width: `${Math.round(progressPercent * 100)}%`}]}/>
+                    <View style={[styles.progressFill, { width: `${Math.round(progressPercent * 100)}%` }]} />
                 </View>
                 <Text style={styles.progressLabel}>{nextLabel}</Text>
 
@@ -94,23 +96,21 @@ export function ColdTurkeyListCard({item, onPress}: Props) {
                                     style={[
                                         styles.progressFill,
                                         styles.lastProgressFill,
-                                        {width: `${Math.round(Math.min(1, lastProgress) * 100)}%`},
+                                        { width: `${Math.round(Math.min(1, lastProgress) * 100)}%` },
                                     ]}
                                 />
                             </View>
                         ) : null}
 
-                        {/* Label + (conditional) trophy */}
                         <View style={styles.inlineRow}>
                             <Text style={styles.streakLabel}>
                                 {hasGoneLonger
                                     ? `Beat last streak (${lastDurationLabel})`
-                                    : `Beat last streak (${lastDurationLabel})${
-                                        lastTimeLeftLabel ? ` | ${lastTimeLeftLabel} left` : ''
+                                    : `Beat last streak (${lastDurationLabel})${lastTimeLeftLabel ? ` · ${lastTimeLeftLabel} left` : ''
                                     }`}
                             </Text>
                             {hasGoneLonger ? (
-                                <FontAwesome6 name="trophy" size={12} color="#facc15"/>
+                                <FontAwesome6 name="trophy" size={12} color={M3Colors.tertiary} />
                             ) : null}
                         </View>
                     </View>
@@ -124,23 +124,21 @@ export function ColdTurkeyListCard({item, onPress}: Props) {
                                     style={[
                                         styles.progressFill,
                                         styles.recordProgressFill,
-                                        {width: `${Math.round(Math.min(1, recordProgress) * 100)}%`},
+                                        { width: `${Math.round(Math.min(1, recordProgress) * 100)}%` },
                                     ]}
                                 />
                             </View>
                         ) : null}
 
-                        {/* Label + (conditional) trophy */}
                         <View style={styles.inlineRow}>
                             <Text style={[styles.streakLabel, styles.recordLabel]}>
                                 {hasHitRecord
                                     ? `Record streak (${recordDurationLabel})`
-                                    : `Record streak (${recordDurationLabel})${
-                                        recordTimeLeftLabel ? ` | ${recordTimeLeftLabel} left` : ''
+                                    : `Record streak (${recordDurationLabel})${recordTimeLeftLabel ? ` · ${recordTimeLeftLabel} left` : ''
                                     }`}
                             </Text>
                             {hasHitRecord ? (
-                                <FontAwesome6 name="trophy" size={12} color="#fde047"/>
+                                <FontAwesome6 name="trophy" size={12} color={M3Colors.tertiary} />
                             ) : null}
                         </View>
                     </View>
@@ -152,99 +150,103 @@ export function ColdTurkeyListCard({item, onPress}: Props) {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#18181f',
-        borderRadius: 20,
-        padding: 18,
-        marginBottom: 16,
-    },
-    coldCard: {
+        backgroundColor: M3Colors.surfaceContainer,
+        borderRadius: M3Radius.large,
+        padding: M3Spacing.lg,
+        marginBottom: M3Spacing.md,
         borderWidth: 1,
-        borderColor: '#34d399',
+        borderColor: hexToRgba(M3Colors.primary, 0.3),
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: M3Spacing.md,
     },
     title: {
         fontSize: 18,
-        fontWeight: '700',
-        color: '#fff',
+        fontWeight: '500',
+        color: M3Colors.onSurface,
         flexShrink: 1,
-        marginRight: 16,
+        marginRight: M3Spacing.lg,
     },
     iconContainer: {
-        backgroundColor: '#2f2f3b',
+        backgroundColor: hexToRgba(M3Colors.primary, 0.12),
         width: 40,
         height: 40,
-        borderRadius: 20,
+        borderRadius: M3Radius.medium,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    coldIcon: {
-        backgroundColor: 'rgba(52, 211, 153, 0.15)',
-    },
     subtitle: {
-        color: '#bbb',
+        color: M3Colors.onSurfaceVariant,
         fontSize: 14,
     },
     breakdownText: {
-        marginTop: 12,
-        fontWeight: '600',
+        marginTop: M3Spacing.md,
+        fontWeight: '500',
         fontSize: 16,
-        color: '#fff',
+        color: M3Colors.onSurface,
     },
     breakdownNumber: {
-        fontWeight: '800',
+        fontWeight: '600',
         fontSize: 18,
-        color: '#fff',
+        color: M3Colors.primary,
+    },
+    breakdownUnit: {
+        color: M3Colors.onSurfaceVariant,
+    },
+    breakdownSeparator: {
+        color: M3Colors.outline,
     },
     progressContainer: {
-        marginTop: 16,
-        gap: 10,
+        marginTop: M3Spacing.lg,
+        gap: M3Spacing.sm,
     },
     progressBar: {
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: 'rgba(52, 211, 153, 0.2)',
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: hexToRgba(M3Colors.primary, 0.2),
         overflow: 'hidden',
     },
     progressFill: {
         height: '100%',
-        backgroundColor: '#34d399',
+        backgroundColor: M3Colors.primary,
+        borderRadius: 3,
     },
     progressLabel: {
-        color: '#a7f3d0',
+        color: M3Colors.onPrimaryContainer,
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: '500',
     },
     streakSection: {
-        gap: 6,
+        gap: M3Spacing.xs,
+        marginTop: M3Spacing.xs,
     },
     lastProgressBar: {
-        backgroundColor: 'rgba(96, 165, 250, 0.18)',
+        backgroundColor: hexToRgba(M3Colors.secondary, 0.18),
     },
     lastProgressFill: {
-        backgroundColor: '#60a5fa',
+        backgroundColor: M3Colors.secondary,
     },
     recordProgressBar: {
-        backgroundColor: 'rgba(59, 130, 246, 0.18)',
+        backgroundColor: hexToRgba(M3Colors.tertiary, 0.18),
     },
     recordProgressFill: {
-        backgroundColor: '#38bdf8',
+        backgroundColor: M3Colors.tertiary,
     },
     streakLabel: {
-        color: '#bfdbfe',
+        color: M3Colors.onSecondaryContainer,
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: '500',
     },
     recordLabel: {
-        color: '#a5f3fc',
+        color: M3Colors.onTertiaryContainer,
     },
     inlineRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: M3Spacing.xs,
     },
 });
+
