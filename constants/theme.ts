@@ -35,6 +35,11 @@ export const M3Colors = {
     onSurface: '#E6E1E5',
     onSurfaceVariant: '#CAC4D0',
 
+    // Custom "Vibrant" Expressive colors - saturated versions for High-Emphasis backgrounds
+    vibrantTeal: '#00D6A0', // Brighter teal for active hero states
+    vibrantOrange: '#FF9E44', // Brighter orange for active dose hero states
+    vibrantPurple: '#D0BCFF', // Pop secondary
+
     // Borders and outlines
     outline: '#938F99',
     outlineVariant: '#49454F',
@@ -57,6 +62,8 @@ export const M3Spacing = {
     xl: 20,
     xxl: 24,
     xxxl: 32,
+    huge: 48,  // For expressive spacing
+    massive: 64, // For graphic separation
 } as const;
 
 export const M3Radius = {
@@ -67,6 +74,7 @@ export const M3Radius = {
     large: 16,
     extraLarge: 28,
     full: 9999,
+    expressive: 24, // A distinct smooth curve for containers
 } as const;
 
 export const M3Elevation = {
@@ -78,27 +86,31 @@ export const M3Elevation = {
     level5: 12,
 } as const;
 
-// Typography following M3 type scale
+// Typography following M3 type scale + Expressive "Hero" sizes
 export const M3Typography = {
-    displayLarge: { fontSize: 57, fontWeight: '400' as const, lineHeight: 64 },
+    // Hero / Display - For "Macro" Typography moments
+    heroLarge: { fontSize: 80, fontWeight: '300' as const, lineHeight: 88, letterSpacing: -2 },
+    heroMedium: { fontSize: 64, fontWeight: '300' as const, lineHeight: 72, letterSpacing: -1 },
+    // Standard M3 Display
+    displayLarge: { fontSize: 57, fontWeight: '400' as const, lineHeight: 64, letterSpacing: -0.25 },
     displayMedium: { fontSize: 45, fontWeight: '400' as const, lineHeight: 52 },
     displaySmall: { fontSize: 36, fontWeight: '400' as const, lineHeight: 44 },
 
     headlineLarge: { fontSize: 32, fontWeight: '400' as const, lineHeight: 40 },
     headlineMedium: { fontSize: 28, fontWeight: '400' as const, lineHeight: 36 },
-    headlineSmall: { fontSize: 24, fontWeight: '400' as const, lineHeight: 32 },
+    headlineSmall: { fontSize: 24, fontWeight: '500' as const, lineHeight: 32 }, // Increased weight for clarity
 
-    titleLarge: { fontSize: 22, fontWeight: '400' as const, lineHeight: 28 },
-    titleMedium: { fontSize: 16, fontWeight: '500' as const, lineHeight: 24 },
-    titleSmall: { fontSize: 14, fontWeight: '500' as const, lineHeight: 20 },
+    titleLarge: { fontSize: 22, fontWeight: '500' as const, lineHeight: 28 },
+    titleMedium: { fontSize: 16, fontWeight: '600' as const, lineHeight: 24, letterSpacing: 0.15 },
+    titleSmall: { fontSize: 14, fontWeight: '600' as const, lineHeight: 20, letterSpacing: 0.1 },
 
-    bodyLarge: { fontSize: 16, fontWeight: '400' as const, lineHeight: 24 },
-    bodyMedium: { fontSize: 14, fontWeight: '400' as const, lineHeight: 20 },
-    bodySmall: { fontSize: 12, fontWeight: '400' as const, lineHeight: 16 },
+    bodyLarge: { fontSize: 16, fontWeight: '400' as const, lineHeight: 24, letterSpacing: 0.5 },
+    bodyMedium: { fontSize: 14, fontWeight: '400' as const, lineHeight: 20, letterSpacing: 0.25 },
+    bodySmall: { fontSize: 12, fontWeight: '400' as const, lineHeight: 16, letterSpacing: 0.4 },
 
-    labelLarge: { fontSize: 14, fontWeight: '500' as const, lineHeight: 20 },
-    labelMedium: { fontSize: 12, fontWeight: '500' as const, lineHeight: 16 },
-    labelSmall: { fontSize: 11, fontWeight: '500' as const, lineHeight: 16 },
+    labelLarge: { fontSize: 14, fontWeight: '600' as const, lineHeight: 20, letterSpacing: 0.1 },
+    labelMedium: { fontSize: 12, fontWeight: '600' as const, lineHeight: 16, letterSpacing: 0.5 },
+    labelSmall: { fontSize: 11, fontWeight: '600' as const, lineHeight: 16, letterSpacing: 0.5 },
 } as const;
 
 // Helper to create rgba from hex
@@ -107,6 +119,15 @@ export function hexToRgba(hex: string, alpha: number): string {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Helper to generate a "Tonal Surface" color (mixing primary with surface) for expressive backgrounds
+// This simulates the M3 "Surface Tint" elevation effect but with more control
+export function getTonalSurfaceColor(baseSurface: string, tintColor: string, levelWeight: number): string {
+    // Simplified mixing logic for demo purposes (in a real app, use a color library)
+    // Here we just return an RGBA overlay of the tint on top of the surface
+    // For 'levelWeight', think of it as opacity: 0.05, 0.08, 0.11, etc.
+    return hexToRgba(tintColor, levelWeight);
 }
 
 // Semantic color aliases for specific use cases
