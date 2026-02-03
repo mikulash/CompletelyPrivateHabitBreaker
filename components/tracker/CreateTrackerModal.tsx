@@ -92,7 +92,7 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
         if (!trimmedName) return;
 
         if (selectedType === TrackerType.SlowLoweringTheDosage) {
-            const amount = parseFloat(dosageValue);
+            const amount = Number.parseFloat(dosageValue);
             const item: DoseDecreaseTrackedItem = {
                 id: `${Date.now()}`,
                 name: trimmedName,

@@ -30,7 +30,7 @@ export function TrackerDetailTemplate<ItemType>({
   renderSummary,
   extraEditFields,
   saveLabel = 'Save changes',
-}: TrackerDetailTemplateProps<ItemType>) {
+}: Readonly<TrackerDetailTemplateProps<ItemType>>) {
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       {renderSummary(item)}

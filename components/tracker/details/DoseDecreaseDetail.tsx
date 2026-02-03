@@ -38,7 +38,7 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
   }, [item.defaultDose]);
 
   const handleSaveDefaultDose = () => {
-    const val = parseFloat(defaultDoseInput);
+    const val = Number.parseFloat(defaultDoseInput);
     if (!defaultDoseInput) {
       updateItem({ ...item, defaultDose: undefined });
       Alert.alert('Updated', 'Default dose removed');
@@ -158,7 +158,7 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
 
   const handleSaveEdit = () => {
     if (!editAt) return;
-    const amount = parseFloat(editValue);
+    const amount = Number.parseFloat(editValue);
     if (!Number.isFinite(amount) || amount <= 0) return;
     const next: DoseDecreaseTrackedItem = {
       ...item,

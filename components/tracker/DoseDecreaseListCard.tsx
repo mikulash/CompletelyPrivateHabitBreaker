@@ -14,7 +14,7 @@ type Props = {
   onPress: () => void;
 };
 
-export function DoseDecreaseListCard({ item, onPress }: Props) {
+export function DoseDecreaseListCard({ item, onPress }: Readonly<Props>) {
   const { updateItem } = useTrackedItems();
   const [doseInput, setDoseInput] = useState<string>('');
 
@@ -31,7 +31,7 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
     normalizedInput.trim().length > 0 && !Number.isNaN(Number(normalizedInput));
 
   const handleLogClick = () => {
-    // If clicking the log button (which is inside the touchable card), 
+    // If clicking the log button (which is inside the touchable card),
     // we need to stop propagation or handle interaction carefully.
     // In RN, nested touchables work fine.
     handleLogDose();
@@ -39,7 +39,7 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
 
   const handleLogDose = () => {
     if (!canLog) return;
-    const amount = parseFloat(normalizedInput);
+    const amount = Number.parseFloat(normalizedInput);
     if (!Number.isFinite(amount) || amount <= 0) return;
 
     const next = {
@@ -59,7 +59,7 @@ export function DoseDecreaseListCard({ item, onPress }: Props) {
 
   const handleQuickAdd = () => {
     if (!item.defaultDose) return;
-    const current = parseFloat(normalizedInput) || 0;
+    const current = Number.parseFloat(normalizedInput) || 0;
     const nextVal = current + item.defaultDose;
     setDoseInput(Number.isInteger(nextVal) ? String(nextVal) : nextVal.toFixed(2));
   };
