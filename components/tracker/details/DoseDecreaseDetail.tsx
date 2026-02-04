@@ -196,7 +196,12 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
         const icon = getTrackerIcon(item.type);
         const daysTracked = calculateDaysTracked(item.startedAt);
         const slice = currentWeekSlice;
-        const maxInSlice = Math.max(1, ...slice.map((d) => d.value));
+        const maxDataVal = Math.max(0, ...slice.map((d) => d.value));
+        // Scale chart to fit both the data and the starting value (baseline)
+        const chartMax = Math.max(1, item.currentUsageValue, maxDataVal);
+        const totalInSlice = slice.reduce((acc, curr) => acc + curr.value, 0);
+        const avgInSlice = slice.length > 0 ? (totalInSlice / slice.length).toFixed(2) : '0';
+        const displayAvg = Number(avgInSlice); // cleaner display
         return (
           <>
             <View style={[styles.summaryCard, styles.doseSummary]}>
@@ -208,6 +213,7 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
               </View>
               <Text style={styles.summarySubtitle}>Steady dosage decrease</Text>
               <Text style={styles.summaryMeta}>Started {formatDateForDisplay(item.startedAt)}</Text>
+              <Text style={styles.summaryMeta}>Initial daily intake: {item.currentUsageValue} {item.currentUsageUnit}</Text>
               {daysTracked !== null ? (
                 <Text style={[styles.summaryHighlight, styles.doseHighlight]}>
                   {daysTracked} {daysTracked === 1 ? 'day' : 'days'} trimming dosage
@@ -224,46 +230,76 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
 
             {/* Weekly graph */}
             <View style={[styles.summaryCard, styles.doseSummary]}>
-              <View style={styles.navRow}>
-                <Text style={styles.sectionTitle}>Daily totals</Text>
-                <View style={styles.navControls}>
+              <View style={styles.chartHeader}>
+                <Text style={styles.chartTitle}>Daily History</Text>
+                <View style={styles.chartControls}>
                   <TouchableOpacity
                     onPress={() => setWeekIndex((i) => Math.min(maxWeekIndex, i + 1))}
-                    style={[styles.navButton, weekIndex >= maxWeekIndex && styles.navButtonDisabled]}
+                    style={[styles.chartNavBtn, weekIndex >= maxWeekIndex && styles.navButtonDisabled]}
                     disabled={weekIndex >= maxWeekIndex}
-                    accessibilityLabel="Previous week"
                   >
-                    <FontAwesome6 name="chevron-left" color="#fb923c" size={14} />
+                    <FontAwesome6 name="chevron-left" color="#fb923c" size={12} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setWeekIndex((i) => Math.max(0, i - 1))}
-                    style={[styles.navButton, weekIndex === 0 && styles.navButtonDisabled]}
+                    style={[styles.chartNavBtn, weekIndex === 0 && styles.navButtonDisabled]}
                     disabled={weekIndex === 0}
-                    accessibilityLabel="Next week"
                   >
-                    <FontAwesome6 name="chevron-right" color="#fb923c" size={14} />
+                    <FontAwesome6 name="chevron-right" color="#fb923c" size={12} />
                   </TouchableOpacity>
                 </View>
               </View>
-              <Text style={styles.rangeLabel}>{rangeLabel}</Text>
+
+              <View style={{ marginTop: 12, marginBottom: 24 }}>
+                <Text style={styles.chartBigNumber}>{displayAvg} <Text style={styles.chartUnit}>{item.currentUsageUnit} / day (avg)</Text></Text>
+                <Text style={styles.chartSubtitle}>{rangeLabel}</Text>
+              </View>
 
               {slice.length === 0 ? (
                 <Text style={styles.emptyText}>No dose logs yet</Text>
               ) : (
-                <View style={styles.chartRow}>
-                  {slice.map((entry, idx) => {
-                    const heightPct = Math.max(0, Math.min(1, entry.value / maxInSlice));
-                    const barHeight = 90 * heightPct + 6; // min height 6
-                    const dayLabel = entry.date.toLocaleDateString(undefined, { weekday: 'short' });
-                    const valueLabel = Number.isInteger(entry.value) ? `${entry.value}` : entry.value.toFixed(1);
-                    return (
-                      <View key={`${entry.date.toISOString()}-${idx}`} style={styles.barContainer} accessibilityLabel={`${dayLabel}: ${valueLabel} ${item.currentUsageUnit}`}>
-                        <Text style={styles.barValueLabel}>{valueLabel} {item.currentUsageUnit}</Text>
-                        <View style={[styles.bar, { height: barHeight }]} />
-                        <Text style={styles.barDayLabel}>{dayLabel}</Text>
-                      </View>
-                    );
-                  })}
+                <View style={styles.chartBody}>
+                  {/* Y Axis */}
+                  <View style={styles.yAxis}>
+                    <Text style={styles.axisLabel}>{Math.round(chartMax)}</Text>
+                    <Text style={styles.axisLabel}>{Math.round(chartMax / 2)}</Text>
+                    <Text style={styles.axisLabel}>0</Text>
+                  </View>
+
+                  <View style={styles.barsArea}>
+                    {/* Starting Dose Reference Line */}
+                    {item.currentUsageValue > 0 && (
+                      <View
+                        style={[
+                          styles.referenceLine,
+                          { bottom: `${(item.currentUsageValue / chartMax) * 100}%` },
+                        ]}
+                      />
+                    )}
+
+                    {slice.map((entry, idx) => {
+                      const heightPct = Math.max(0, Math.min(1, entry.value / chartMax));
+                      const pct = Math.round(heightPct * 100);
+                      const dayLabel = entry.date.toLocaleDateString(undefined, { weekday: 'narrow' });
+                      const valueLabel = Number.isInteger(entry.value) ? `${entry.value}` : entry.value.toFixed(1);
+
+                      return (
+                        <View key={`${entry.date.toISOString()}-${idx}`} style={styles.barCol}>
+                          {/* Bar Container allows relative positioning of badge */}
+                          <View style={styles.barTrack}>
+                            <View style={[styles.barPill, { height: `${pct}%` }]}>
+                              {entry.value > 0 && (
+                                <View style={styles.innerBadge}>
+                                  <Text style={styles.innerBadgeText}>{valueLabel}</Text>
+                                </View>
+                              )}
+                            </View>
+                          </View>
+                          <Text style={styles.barDayLabel}>{dayLabel}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
                 </View>
               )}
             </View>
@@ -427,32 +463,132 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  barContainer: {
-    flex: 1,
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  bar: {
-    width: 16,
-    backgroundColor: '#fb923c',
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
   },
-  barDayLabel: {
-    marginTop: 6,
-    color: '#ccc',
-    fontSize: 12,
+  chartControls: {
+    flexDirection: 'row',
+    gap: 8,
+    backgroundColor: '#2f2f3b',
+    borderRadius: 20,
+    padding: 4,
+  },
+  chartNavBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1f1f29',
+  },
+  chartBigNumber: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  chartUnit: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#bbb',
+  },
+  chartSubtitle: {
+    color: '#999',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  chartBody: {
+    flexDirection: 'row',
+    height: 180,
+    gap: 12,
+  },
+  yAxis: {
+    justifyContent: 'space-between',
+    paddingVertical: 20, // Align with bars roughly
+    alignItems: 'flex-end',
+    width: 30,
+  },
+  axisLabel: {
+    color: '#666',
+    fontSize: 10,
     fontWeight: '600',
   },
-  barValueLabel: {
-    color: '#fb923c',
+  barsArea: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingBottom: 20, // space for x labels
+  },
+  barCol: {
+    flex: 1,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  barTrack: {
+    width: 32, // wider for numbers
+    height: '100%',
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  barPill: {
+    width: '100%',
+    backgroundColor: 'rgba(251, 146, 60, 0.8)',
+    borderRadius: 16,
+    alignItems: 'center',
+    paddingTop: 4,
+  },
+  barDayLabel: {
+    marginTop: 8,
+    color: '#bbb',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  innerBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 12,
+    width: 24,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 4,
   },
+  innerBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  referenceLine: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderStyle: 'dashed',
+    borderWidth: 1, // required for dashed border on some versions, but height 1 works usually. 
+    // Actually for dashed line in RN:
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderTopWidth: 1,
+    zIndex: 0, // behind bars? or on top? On top is better visibility
+  },
+
+
   emptyText: {
     marginTop: 8,
     color: '#bbb',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
+
   timelineContainer: {
     marginTop: 8,
     gap: 10,
