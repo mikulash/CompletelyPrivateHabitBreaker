@@ -199,11 +199,6 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
         const maxInSlice = Math.max(1, ...slice.map((d) => d.value));
         return (
           <>
-            <TrackingStatsCard
-              startedAt={item.startedAt}
-              resetHistory={item.resetHistory}
-              accentColor={icon.color}
-            />
             <View style={[styles.summaryCard, styles.doseSummary]}>
               <View style={styles.summaryHeader}>
                 <Text style={styles.summaryTitle}>{item.name}</Text>
@@ -219,6 +214,11 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                 </Text>
               ) : null}
             </View>
+            <TrackingStatsCard
+              startedAt={item.startedAt}
+              resetHistory={item.resetHistory}
+              accentColor={icon.color}
+            />
 
 
 

@@ -32,6 +32,7 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
     const [selectedType, setSelectedType] = useState<TrackerType>(TrackerType.ColdTurkey);
     const [dosageValue, setDosageValue] = useState<string>('');
     const [dosageUnit, setDosageUnit] = useState<DosageUnit>('mg');
+    const [defaultDoseValue, setDefaultDoseValue] = useState<string>('');
 
     useEffect(() => {
         if (visible) {
@@ -41,6 +42,7 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
             setSelectedType(TrackerType.ColdTurkey);
             setDosageValue('');
             setDosageUnit('g');
+            setDefaultDoseValue('');
         }
     }, [visible]);
 
@@ -93,6 +95,8 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
 
         if (selectedType === TrackerType.SlowLoweringTheDosage) {
             const amount = Number.parseFloat(dosageValue);
+            const defDose = defaultDoseValue ? Number.parseFloat(defaultDoseValue) : undefined;
+
             const item: DoseDecreaseTrackedItem = {
                 id: `${Date.now()}`,
                 name: trimmedName,
@@ -102,6 +106,7 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
                 type: TrackerType.SlowLoweringTheDosage,
                 currentUsageValue: Number.isFinite(amount) ? amount : 0,
                 currentUsageUnit: dosageUnit,
+                defaultDose: (defDose && Number.isFinite(defDose)) ? defDose : undefined,
             };
             addItem(item);
         } else {
@@ -167,7 +172,7 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
 
                     {selectedType === TrackerType.SlowLoweringTheDosage ? (
                         <>
-                            <Text style={styles.inputLabel}>Current regular usage</Text>
+                            <Text style={styles.inputLabel}>Current daily input/intake</Text>
                             <View style={styles.usageRow}>
                                 <TextInput
                                     value={dosageValue}
@@ -193,6 +198,16 @@ export function CreateTrackerModal({ visible, onClose }: CreateTrackerModalProps
                                     </TouchableOpacity>
                                 </View>
                             </View>
+
+                            <Text style={styles.inputLabel}>Default quick log amount (optional)</Text>
+                            <TextInput
+                                value={defaultDoseValue}
+                                onChangeText={setDefaultDoseValue}
+                                placeholder={`e.g. 3 (${dosageUnit})`}
+                                placeholderTextColor="#888"
+                                style={styles.input}
+                                keyboardType="decimal-pad"
+                            />
                         </>
                     ) : null}
 
