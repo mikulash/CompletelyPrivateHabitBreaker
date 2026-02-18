@@ -7,7 +7,15 @@ import { getTonalSurfaceColor, hexToRgba, M3Colors, M3Radius, M3Spacing, M3Typog
 import { useElapsedBreakdown } from '@/hooks/useElapsedBreakdown';
 import { ColdTurkeyTrackedItem } from '@/types/tracking';
 import { formatTimeLeft } from '@/utils/date';
-import { getColdTurkeyProgress, getTrackerIcon } from '@/utils/tracker';
+import {
+    formatElapsedDurationLabel,
+    getColdTurkeyProgress,
+    getColdTurkeyStreakTargets,
+    getTrackerIcon,
+} from '@/utils/tracker';
+
+const GOLD = '#FFD700';
+const GOLD_BORDER = 'rgba(255, 215, 0, 0.55)';
 
 type Props = {
     item: ColdTurkeyTrackedItem;
@@ -20,7 +28,6 @@ export function ColdTurkeyListCard({ item, onPress }: Props) {
     const breakdown = useElapsedBreakdown(item.startedAt);
 
     // Hero metric: The largest unit (Days, Months, Years)
-    // If years > 0, show years. Else if months > 0, show months. Else days.
     const primaryUnit = breakdown[0];
     const heroValue = primaryUnit.value;
     const heroLabel = primaryUnit.unit;
@@ -35,6 +42,16 @@ export function ColdTurkeyListCard({ item, onPress }: Props) {
 
     const tintColor = M3Colors.vibrantTeal;
 
+    // --- Record / personal best logic ---
+    const streakTargets = getColdTurkeyStreakTargets(item.resetHistory);
+    const recordMs = streakTargets.record?.durationMs ?? null;
+    const isNewRecord = recordMs !== null && progress.elapsedMs > recordMs;
+    const showRecordBadge = recordMs !== null && !isNewRecord;
+    const recordLabel = recordMs !== null ? formatElapsedDurationLabel(recordMs, 2) : '';
+
+    // Dynamic border for "new record" state
+    const borderColor = isNewRecord ? GOLD_BORDER : hexToRgba(tintColor, 0.2);
+
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -43,8 +60,8 @@ export function ColdTurkeyListCard({ item, onPress }: Props) {
                 styles.card,
                 {
                     backgroundColor: getTonalSurfaceColor(M3Colors.surface, tintColor, 0.08),
-                    borderColor: hexToRgba(tintColor, 0.2)
-                }
+                    borderColor,
+                },
             ]}
             activeOpacity={0.8}
         >
@@ -52,9 +69,14 @@ export function ColdTurkeyListCard({ item, onPress }: Props) {
                 {/* Header with Title and Icon */}
                 <View style={styles.header}>
                     <Text style={styles.title} numberOfLines={1}>{item.name}</Text>
-                    <View style={[styles.iconContainer, { backgroundColor: hexToRgba(tintColor, 0.15) }]}>
-                        <FontAwesome6 color={tintColor} name={icon.name} size={20} />
+                    <View style={[styles.iconContainer, { backgroundColor: hexToRgba(isNewRecord ? GOLD : tintColor, 0.15) }]}>
+                        <FontAwesome6 color={isNewRecord ? GOLD : tintColor} name={icon.name} size={20} />
                     </View>
+                    {isNewRecord && (
+                        <View style={[styles.iconContainer, { backgroundColor: hexToRgba(GOLD, 0.15), marginLeft: M3Spacing.sm }]}>
+                            <FontAwesome6 color={GOLD} name="trophy" size={20} />
+                        </View>
+                    )}
                 </View>
 
                 {/* Hero Metric Section */}
@@ -73,7 +95,15 @@ export function ColdTurkeyListCard({ item, onPress }: Props) {
                         <View style={[styles.progressBar, { backgroundColor: hexToRgba(tintColor, 0.2) }]}>
                             <View style={[styles.progressFill, { width: `${Math.round(progressPercent * 100)}%` as any, backgroundColor: tintColor }]} />
                         </View>
-                        <Text style={styles.progressLabel}>{nextLabel}</Text>
+                        <View style={styles.progressRow}>
+                            <Text style={styles.progressLabel}>{nextLabel}</Text>
+                            {showRecordBadge && (
+                                <View style={styles.recordBadge}>
+                                    <FontAwesome6 name="trophy" size={10} color={GOLD} style={{ opacity: 0.85 }} />
+                                    <Text style={styles.recordText}>{recordLabel}</Text>
+                                </View>
+                            )}
+                        </View>
                     </View>
                 </View>
             </View>
@@ -87,7 +117,6 @@ const styles = StyleSheet.create({
         marginBottom: M3Spacing.lg,
         borderWidth: 1,
         overflow: 'hidden',
-        // M3 Expressive suggestion: flatter cards with outline/tint rather than high elevation in dark mode
     },
     content: {
         padding: M3Spacing.xl,
@@ -107,7 +136,7 @@ const styles = StyleSheet.create({
     iconContainer: {
         width: 40,
         height: 40,
-        borderRadius: M3Radius.medium, // Squircle-ish
+        borderRadius: M3Radius.medium,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -118,14 +147,14 @@ const styles = StyleSheet.create({
         marginBottom: M3Spacing.md,
     },
     heroNumber: {
-        ...M3Typography.displayLarge, // Using the new massive size
-        fontWeight: '300', // Thin weight for modern look
+        ...M3Typography.displayLarge,
+        fontWeight: '300',
         lineHeight: 64,
     },
     heroLabel: {
         ...M3Typography.headlineSmall,
         marginLeft: M3Spacing.sm,
-        marginBottom: 6, // Optical alignment with baseline
+        marginBottom: 6,
     },
     footer: {
         gap: M3Spacing.md,
@@ -138,7 +167,7 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     progressBar: {
-        height: 6, // Thinner, more elegant
+        height: 6,
         borderRadius: 3,
         overflow: 'hidden',
     },
@@ -146,10 +175,30 @@ const styles = StyleSheet.create({
         height: '100%',
         borderRadius: 3,
     },
+    progressRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     progressLabel: {
         ...M3Typography.labelSmall,
         color: M3Colors.onSurfaceVariant,
         opacity: 0.8,
+        flexShrink: 1,
+    },
+    recordBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: M3Radius.full,
+        backgroundColor: 'rgba(255, 215, 0, 0.10)',
+    },
+    recordText: {
+        ...M3Typography.labelSmall,
+        color: GOLD,
+        opacity: 0.85,
+        fontSize: 10,
     },
 });
-
