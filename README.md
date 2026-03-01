@@ -17,11 +17,10 @@ Built with Expo Router, React Native, and local persistence (AsyncStorage). Runs
 - Dosage logging with mg/g units, daily totals, and recent timeline
 - Offline-first: data stored locally with AsyncStorage
 
+---
 ## Screenshots
 
-Place your screenshots in `docs/screenshots/` and they will render here once committed.
-
-#### Home (with trackers)
+#### Home
 
   <img src="docs/screenshots/MainPageWithItems.png" alt="Home – List" width="400" />
 
