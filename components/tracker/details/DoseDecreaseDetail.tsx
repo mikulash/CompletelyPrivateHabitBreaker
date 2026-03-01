@@ -29,6 +29,7 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
 
   const [editAt, setEditAt] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const [defaultDoseInput, setDefaultDoseInput] = useState<string>(item.defaultDose ? String(item.defaultDose) : '');
   const [dailyIntakeInput, setDailyIntakeInput] = useState<string>(String(item.currentUsageValue));
@@ -145,6 +146,17 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
       .filter((l) => !Number.isNaN(l.atDate.getTime()) && l.atDate >= start && l.atDate < end)
       .sort((a, b) => a.atDate.getTime() - b.atDate.getTime());
   }, [item.doseLogs]);
+
+  const logsForSelectedDay = useMemo(() => {
+    if (!selectedDay) return [];
+    const logs = item.doseLogs ?? [];
+    const start = dayStart(selectedDay);
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
+    return logs
+      .map((l) => ({ ...l, atDate: new Date(l.at) }))
+      .filter((l) => !Number.isNaN(l.atDate.getTime()) && l.atDate >= start && l.atDate < end)
+      .sort((a, b) => a.atDate.getTime() - b.atDate.getTime());
+  }, [item.doseLogs, selectedDay]);
 
   const promptLogActions = (logAt: string, currentVal: number) => {
     Alert.alert('Log entry', 'Choose an action', [
@@ -336,7 +348,12 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                       const valueLabel = Number.isInteger(entry.value) ? `${entry.value}` : entry.value.toFixed(1);
 
                       return (
-                        <View key={`${entry.date.toISOString()}-${idx}`} style={styles.barCol}>
+                        <TouchableOpacity
+                          key={`${entry.date.toISOString()}-${idx}`}
+                          style={styles.barCol}
+                          onPress={() => setSelectedDay(entry.date)}
+                          activeOpacity={0.7}
+                        >
                           <View style={styles.barTrack}>
                             <View style={[styles.barPill, { height: `${pct}%`, backgroundColor: hexToRgba(tintColor, 0.8) }]}>
                               {entry.value > 0 && (
@@ -347,13 +364,70 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                             </View>
                           </View>
                           <Text style={styles.barDayLabel}>{dayLabel}</Text>
-                        </View>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>
                 </View>
               )}
             </View>
+
+            {/* DAY DETAIL MODAL */}
+            <Modal transparent visible={!!selectedDay} onRequestClose={() => setSelectedDay(null)} animationType="fade">
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                  <View style={styles.dayModalHeader}>
+                    <Text style={styles.modalTitle}>
+                      {selectedDay
+                        ? selectedDay.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
+                        : ''}
+                    </Text>
+                    <TouchableOpacity onPress={() => setSelectedDay(null)}>
+                      <FontAwesome6 name="xmark" size={18} color={M3Colors.onSurfaceVariant} />
+                    </TouchableOpacity>
+                  </View>
+
+                  {logsForSelectedDay.length === 0 ? (
+                    <Text style={styles.emptyText}>No doses logged this day</Text>
+                  ) : (
+                    <View style={styles.timelineList}>
+                      {logsForSelectedDay.map((log, idx) => {
+                        const time = log.atDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                        const val = Number.isInteger(log.value) ? `${log.value}` : log.value.toFixed(2);
+                        return (
+                          <TouchableOpacity
+                            key={`${log.at}-${idx}`}
+                            style={styles.timelineItem}
+                            onPress={() => promptLogActions(log.at, log.value)}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Dose at ${time}. Tap to edit or delete.`}
+                          >
+                            <View style={[styles.timelineDot, { backgroundColor: tintColor }]} />
+                            <View style={styles.timelineContent}>
+                              <View style={styles.timelineInfoRow}>
+                                <Text style={styles.timelineTime}>{time}</Text>
+                                <Text style={[styles.timelineValue, { color: tintColor }]}>
+                                  {val} {item.currentUsageUnit}
+                                </Text>
+                              </View>
+                              {log.note ? (
+                                <Text style={styles.timelineNote}>{log.note}</Text>
+                              ) : null}
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  <View style={styles.dayModalFooter}>
+                    <Text style={styles.dayModalTotal}>
+                      Total: {logsForSelectedDay.reduce((sum, l) => sum + l.value, 0).toFixed(1)} {item.currentUsageUnit}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </Modal>
 
             {/* TODAY'S TIMELINE CARD */}
             <View style={[styles.card, { borderColor: hexToRgba(tintColor, 0.3) }]}>
@@ -697,6 +771,24 @@ const styles = StyleSheet.create({
   },
   modalSaveButton: {
     backgroundColor: M3Colors.primary,
+  },
+
+  // --- Day Detail Modal ---
+  dayModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dayModalFooter: {
+    marginTop: M3Spacing.lg,
+    paddingTop: M3Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: M3Colors.outlineVariant,
+    alignItems: 'flex-end',
+  },
+  dayModalTotal: {
+    ...M3Typography.titleSmall,
+    color: M3Colors.onSurface,
   },
 
   // --- Extra Edit Fields ---
