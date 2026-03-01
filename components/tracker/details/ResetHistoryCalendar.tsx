@@ -311,6 +311,7 @@ export function ResetHistoryCalendar({ resetHistory, accentColor }: ResetHistory
 const styles = StyleSheet.create({
     container: {
         marginTop: M3Spacing.xxl,
+        marginBottom: M3Spacing.xxl,
         paddingTop: M3Spacing.xl,
         borderTopWidth: 1,
         borderTopColor: M3Colors.outlineVariant,
