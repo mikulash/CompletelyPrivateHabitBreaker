@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
+import { hexToRgba, M3Colors, M3Radius, M3Spacing, M3Typography } from '@/constants/theme';
 import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 import { DosageUnit, DoseDecreaseTrackedItem } from '@/types/tracking';
 import { calculateDaysTracked, formatDateForDisplay } from '@/utils/date';
@@ -10,8 +11,6 @@ import { getTrackerIcon } from '@/utils/tracker';
 
 import { TrackerDetailTemplate } from './TrackerDetailTemplate';
 import { TrackingStatsCard } from './TrackingStatsCard';
-
-
 
 type DoseDecreaseDetailProps = {
   item: DoseDecreaseTrackedItem;
@@ -133,7 +132,7 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
     const slice = currentWeekSlice;
     if (slice.length === 0) return 'No data yet';
     const fmt = (d: Date) => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    return `${fmt(slice[0].date)}  ${fmt(slice[slice.length - 1].date)}`; // en dash separator
+    return `${fmt(slice[0].date)} – ${fmt(slice[slice.length - 1].date)}`;
   }, [currentWeekSlice]);
 
   const todaysLogs = useMemo(() => {
@@ -186,105 +185,125 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
     setEditValue('');
   };
 
+  const icon = getTrackerIcon(item.type);
+  const tintColor = M3Colors.vibrantOrange;
+  const daysTracked = calculateDaysTracked(item.startedAt);
+
   return (
     <TrackerDetailTemplate
       {...props}
       extraEditFields={
-        <View style={{ marginTop: 16, gap: 16 }}>
+        <View style={styles.extraFieldsContainer}>
           <View>
-            <Text style={styles.inputLabel}>Current Daily Intake ({item.currentUsageUnit})</Text>
+            <Text style={styles.fieldLabel}>Current Daily Intake ({item.currentUsageUnit})</Text>
             <View style={styles.inlineInputRow}>
               <TextInput
                 value={dailyIntakeInput}
                 onChangeText={setDailyIntakeInput}
                 placeholder="e.g. 5"
-                placeholderTextColor="#666"
-                style={[styles.input, { flex: 1 }]}
+                placeholderTextColor={M3Colors.outline}
+                style={[styles.fieldInput, { flex: 1 }]}
                 keyboardType="decimal-pad"
               />
-              <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveDailyIntake}>
-                <Text style={styles.saveButtonText}>Set</Text>
+              <TouchableOpacity style={styles.inlineSetButton} onPress={handleSaveDailyIntake}>
+                <Text style={styles.inlineSetButtonText}>Set</Text>
               </TouchableOpacity>
             </View>
           </View>
           <View>
-            <Text style={styles.inputLabel}>Default Dose Amount ({item.currentUsageUnit})</Text>
+            <Text style={styles.fieldLabel}>Default Dose Amount ({item.currentUsageUnit})</Text>
             <View style={styles.inlineInputRow}>
               <TextInput
                 value={defaultDoseInput}
                 onChangeText={setDefaultDoseInput}
                 placeholder="e.g. 3"
-                placeholderTextColor="#666"
-                style={[styles.input, { flex: 1 }]}
+                placeholderTextColor={M3Colors.outline}
+                style={[styles.fieldInput, { flex: 1 }]}
                 keyboardType="decimal-pad"
               />
-              <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveDefaultDose}>
-                <Text style={styles.saveButtonText}>Set Default</Text>
+              <TouchableOpacity style={styles.inlineSetButton} onPress={handleSaveDefaultDose}>
+                <Text style={styles.inlineSetButtonText}>Set Default</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       }
       renderSummary={(item) => {
-        const icon = getTrackerIcon(item.type);
-        const daysTracked = calculateDaysTracked(item.startedAt);
         const slice = currentWeekSlice;
         const maxDataVal = Math.max(0, ...slice.map((d) => d.value));
-        // Scale chart to fit both the data and the starting value (baseline)
         const chartMax = Math.max(1, item.currentUsageValue, maxDataVal);
         const totalInSlice = slice.reduce((acc, curr) => acc + curr.value, 0);
         const avgInSlice = slice.length > 0 ? (totalInSlice / slice.length).toFixed(2) : '0';
-        const displayAvg = Number(avgInSlice); // cleaner display
+        const displayAvg = Number(avgInSlice);
+
         return (
           <>
-            <View style={[styles.summaryCard, styles.doseSummary]}>
-              <View style={styles.summaryHeader}>
-                <Text style={styles.summaryTitle}>{item.name}</Text>
-                <View style={[styles.summaryIcon, styles.doseIcon]}>
-                  <FontAwesome6 color={icon.color} name={icon.name} size={32} />
+            {/* HERO SECTION — mirrors ColdTurkeyDetail */}
+            <View style={styles.heroContainer}>
+              <View style={styles.heroHeaderRow}>
+                <View style={[styles.heroIconContainer, { backgroundColor: hexToRgba(tintColor, 0.2) }]}>
+                  <FontAwesome6 color={tintColor} name={icon.name} size={24} />
+                </View>
+                <Text style={styles.heroTitle}>{item.name}</Text>
+              </View>
+
+              <View style={styles.timerDisplay}>
+                <Text style={[styles.timerValue, { color: tintColor }]}>
+                  {daysTracked ?? 0}
+                </Text>
+                <Text style={[styles.timerUnit, { color: hexToRgba(tintColor, 0.7) }]}>
+                  {daysTracked === 1 ? 'day' : 'days'}
+                </Text>
+              </View>
+
+              <View style={styles.secondaryInfoRow}>
+                <View style={styles.metaBadge}>
+                  <FontAwesome6 name="pills" size={12} color={M3Colors.onSurfaceVariant} />
+                  <Text style={styles.metaText}>
+                    {item.currentUsageValue} {item.currentUsageUnit}/day
+                  </Text>
+                </View>
+                <View style={styles.metaBadge}>
+                  <FontAwesome6 name="calendar-days" size={12} color={M3Colors.onSurfaceVariant} />
+                  <Text style={styles.metaText}>{formatDateForDisplay(item.startedAt)}</Text>
                 </View>
               </View>
-              <Text style={styles.summarySubtitle}>Steady dosage decrease</Text>
-              <Text style={styles.summaryMeta}>Started {formatDateForDisplay(item.startedAt)}</Text>
-              <Text style={styles.summaryMeta}>Initial daily intake: {item.currentUsageValue} {item.currentUsageUnit}</Text>
-              {daysTracked !== null ? (
-                <Text style={[styles.summaryHighlight, styles.doseHighlight]}>
-                  {daysTracked} {daysTracked === 1 ? 'day' : 'days'} trimming dosage
-                </Text>
-              ) : null}
             </View>
+
+            {/* TRACKING STATS */}
             <TrackingStatsCard
               startedAt={item.startedAt}
               resetHistory={item.resetHistory}
-              accentColor={icon.color}
+              accentColor={tintColor}
             />
 
-
-
-            {/* Weekly graph */}
-            <View style={[styles.summaryCard, styles.doseSummary]}>
-              <View style={styles.chartHeader}>
-                <Text style={styles.chartTitle}>Daily History</Text>
+            {/* DAILY HISTORY CARD */}
+            <View style={[styles.card, { borderColor: hexToRgba(tintColor, 0.3) }]}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>Daily History</Text>
                 <View style={styles.chartControls}>
                   <TouchableOpacity
                     onPress={() => setWeekIndex((i) => Math.min(maxWeekIndex, i + 1))}
-                    style={[styles.chartNavBtn, weekIndex >= maxWeekIndex && styles.navButtonDisabled]}
+                    style={[styles.chartNavBtn, weekIndex >= maxWeekIndex && styles.disabledNav]}
                     disabled={weekIndex >= maxWeekIndex}
                   >
-                    <FontAwesome6 name="chevron-left" color="#fb923c" size={12} />
+                    <FontAwesome6 name="chevron-left" color={tintColor} size={12} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setWeekIndex((i) => Math.max(0, i - 1))}
-                    style={[styles.chartNavBtn, weekIndex === 0 && styles.navButtonDisabled]}
+                    style={[styles.chartNavBtn, weekIndex === 0 && styles.disabledNav]}
                     disabled={weekIndex === 0}
                   >
-                    <FontAwesome6 name="chevron-right" color="#fb923c" size={12} />
+                    <FontAwesome6 name="chevron-right" color={tintColor} size={12} />
                   </TouchableOpacity>
                 </View>
               </View>
 
-              <View style={{ marginTop: 12, marginBottom: 24 }}>
-                <Text style={styles.chartBigNumber}>{displayAvg} <Text style={styles.chartUnit}>{item.currentUsageUnit} / day (avg)</Text></Text>
+              <View style={styles.chartSummary}>
+                <Text style={styles.chartBigNumber}>
+                  {displayAvg}{' '}
+                  <Text style={styles.chartUnit}>{item.currentUsageUnit} / day (avg)</Text>
+                </Text>
                 <Text style={styles.chartSubtitle}>{rangeLabel}</Text>
               </View>
 
@@ -318,9 +337,8 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
 
                       return (
                         <View key={`${entry.date.toISOString()}-${idx}`} style={styles.barCol}>
-                          {/* Bar Container allows relative positioning of badge */}
                           <View style={styles.barTrack}>
-                            <View style={[styles.barPill, { height: `${pct}%` }]}>
+                            <View style={[styles.barPill, { height: `${pct}%`, backgroundColor: hexToRgba(tintColor, 0.8) }]}>
                               {entry.value > 0 && (
                                 <View style={styles.innerBadge}>
                                   <Text style={styles.innerBadgeText}>{valueLabel}</Text>
@@ -337,13 +355,13 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
               )}
             </View>
 
-            {/* Today's timeline */}
-            <View style={[styles.summaryCard, styles.doseSummary]}>
-              <Text style={styles.sectionTitle}>Today’s timeline</Text>
+            {/* TODAY'S TIMELINE CARD */}
+            <View style={[styles.card, { borderColor: hexToRgba(tintColor, 0.3) }]}>
+              <Text style={styles.cardTitle}>Today's timeline</Text>
               {todaysLogs.length === 0 ? (
                 <Text style={styles.emptyText}>No doses logged today</Text>
               ) : (
-                <View style={styles.timelineContainer}>
+                <View style={styles.timelineList}>
                   {todaysLogs.map((log, idx) => {
                     const time = log.atDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
                     const val = Number.isInteger(log.value) ? `${log.value}` : log.value.toFixed(2);
@@ -355,11 +373,13 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                         accessibilityRole="button"
                         accessibilityLabel={`Dose at ${time}${log.note ? `. Note: ${log.note}` : ''}. Tap to edit or delete.`}
                       >
-                        <View style={styles.timelineDot} />
+                        <View style={[styles.timelineDot, { backgroundColor: tintColor }]} />
                         <View style={styles.timelineContent}>
                           <View style={styles.timelineInfoRow}>
-                            <Text style={styles.timelineText}>{time}</Text>
-                            <Text style={styles.timelineValue}>{val} {item.currentUsageUnit}</Text>
+                            <Text style={styles.timelineTime}>{time}</Text>
+                            <Text style={[styles.timelineValue, { color: tintColor }]}>
+                              {val} {item.currentUsageUnit}
+                            </Text>
                           </View>
                           {log.note ? (
                             <Text style={styles.timelineNote}>{log.note}</Text>
@@ -372,28 +392,34 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
               )}
             </View>
 
-            {/* Edit modal */}
+            {/* EDIT MODAL */}
             <Modal transparent visible={!!editAt} onRequestClose={() => setEditAt(null)} animationType="fade">
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  <Text style={styles.sectionTitle}>Edit dose</Text>
-                  <Text style={styles.inputLabel}>Amount ({item.currentUsageUnit})</Text>
+                  <Text style={styles.modalTitle}>Edit dose</Text>
+                  <Text style={styles.fieldLabel}>Amount ({item.currentUsageUnit})</Text>
                   <TextInput
                     value={editValue}
                     onChangeText={setEditValue}
                     placeholder="Amount"
-                    placeholderTextColor="#888"
-                    style={styles.input}
+                    placeholderTextColor={M3Colors.outline}
+                    style={styles.fieldInput}
                     keyboardType="decimal-pad"
                     inputMode="decimal"
                     autoFocus
                   />
                   <View style={styles.modalActions}>
-                    <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setEditAt(null)}>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalCancelButton]}
+                      onPress={() => setEditAt(null)}
+                    >
                       <Text style={styles.modalButtonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveEdit}>
-                      <Text style={[styles.modalButtonText, styles.saveButtonText]}>Save</Text>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalSaveButton]}
+                      onPress={handleSaveEdit}
+                    >
+                      <Text style={[styles.modalButtonText, { color: M3Colors.onPrimary }]}>Save</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -407,111 +433,86 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
 }
 
 const styles = StyleSheet.create({
-  summaryCard: {
-    backgroundColor: '#18181f',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 24,
-  },
-  doseSummary: {
-    borderWidth: 1,
-    borderColor: 'rgba(251, 146, 60, 0.5)',
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  // --- Hero Section ---
+  heroContainer: {
+    marginBottom: M3Spacing.xxl,
     alignItems: 'center',
-    marginBottom: 12,
+    paddingVertical: M3Spacing.lg,
   },
-  summaryTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#fff',
-    flexShrink: 1,
-    marginRight: 16,
+  heroHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: M3Spacing.sm,
+    gap: M3Spacing.md,
   },
-  summaryIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  heroIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: M3Radius.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2f2f3b',
   },
-  doseIcon: {
-    backgroundColor: 'rgba(251, 146, 60, 0.15)',
+  heroTitle: {
+    ...M3Typography.headlineSmall,
+    color: M3Colors.onSurface,
   },
-  summarySubtitle: {
-    color: '#fb923c',
-    fontSize: 16,
-    fontWeight: '600',
+  timerDisplay: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
   },
-  summaryMeta: {
-    color: '#bbb',
-    marginTop: 6,
-    fontSize: 14,
+  timerValue: {
+    ...M3Typography.heroLarge,
+    fontVariant: ['tabular-nums'],
   },
-  summaryHighlight: {
-    marginTop: 12,
-    fontSize: 18,
-    fontWeight: '700',
+  timerUnit: {
+    ...M3Typography.displaySmall,
+    marginLeft: M3Spacing.sm,
   },
-  doseHighlight: {
-    color: '#fb923c',
+  secondaryInfoRow: {
+    flexDirection: 'row',
+    marginTop: M3Spacing.sm,
+    gap: M3Spacing.md,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  navRow: {
+  metaBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 6,
+    backgroundColor: M3Colors.surfaceContainerHigh,
+    paddingHorizontal: M3Spacing.md,
+    paddingVertical: M3Spacing.xs,
+    borderRadius: M3Radius.full,
   },
-  navControls: {
-    flexDirection: 'row',
-    gap: 8,
+  metaText: {
+    ...M3Typography.labelMedium,
+    color: M3Colors.onSurfaceVariant,
   },
-  navButton: {
+
+  // --- Card Shell ---
+  card: {
+    backgroundColor: M3Colors.surfaceContainer,
+    borderRadius: M3Radius.extraLarge,
+    padding: M3Spacing.xl,
+    marginBottom: M3Spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(251, 146, 60, 0.6)',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
   },
-  navButtonDisabled: {
-    opacity: 0.5,
-  },
-  rangeLabel: {
-    marginTop: 8,
-    color: '#bbb',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  chartRow: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  chartHeader: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  chartTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+  cardTitle: {
+    ...M3Typography.titleMedium,
+    color: M3Colors.onSurface,
   },
+
+  // --- Chart ---
   chartControls: {
     flexDirection: 'row',
-    gap: 8,
-    backgroundColor: '#2f2f3b',
-    borderRadius: 20,
-    padding: 4,
+    gap: M3Spacing.sm,
+    backgroundColor: M3Colors.surfaceContainerHigh,
+    borderRadius: M3Radius.full,
+    padding: M3Spacing.xs,
   },
   chartNavBtn: {
     width: 28,
@@ -519,45 +520,49 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1f1f29',
+    backgroundColor: M3Colors.surfaceContainer,
+  },
+  disabledNav: {
+    opacity: 0.4,
+  },
+  chartSummary: {
+    marginTop: M3Spacing.md,
+    marginBottom: M3Spacing.xxl,
   },
   chartBigNumber: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#fff',
+    ...M3Typography.headlineMedium,
+    color: M3Colors.onSurface,
   },
   chartUnit: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#bbb',
+    ...M3Typography.bodyMedium,
+    color: M3Colors.onSurfaceVariant,
   },
   chartSubtitle: {
-    color: '#999',
-    fontSize: 13,
-    marginTop: 4,
+    ...M3Typography.bodySmall,
+    color: M3Colors.onSurfaceVariant,
+    marginTop: M3Spacing.xs,
   },
   chartBody: {
     flexDirection: 'row',
     height: 180,
-    gap: 12,
+    gap: M3Spacing.md,
   },
   yAxis: {
     justifyContent: 'space-between',
-    paddingVertical: 20, // Align with bars roughly
+    paddingVertical: M3Spacing.xl,
     alignItems: 'flex-end',
     width: 30,
   },
   axisLabel: {
-    color: '#666',
-    fontSize: 10,
-    fontWeight: '600',
+    ...M3Typography.labelSmall,
+    color: M3Colors.onSurfaceVariant,
   },
   barsArea: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    paddingBottom: 20, // space for x labels
+    paddingBottom: M3Spacing.xl,
   },
   barCol: {
     flex: 1,
@@ -566,36 +571,34 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   barTrack: {
-    width: 32, // wider for numbers
+    width: 32,
     height: '100%',
     justifyContent: 'flex-end',
     position: 'relative',
   },
   barPill: {
     width: '100%',
-    backgroundColor: 'rgba(251, 146, 60, 0.8)',
-    borderRadius: 16,
+    borderRadius: M3Radius.large,
     alignItems: 'center',
-    paddingTop: 4,
+    paddingTop: M3Spacing.xs,
   },
   barDayLabel: {
-    marginTop: 8,
-    color: '#bbb',
-    fontSize: 12,
-    fontWeight: '600',
+    ...M3Typography.labelSmall,
+    color: M3Colors.onSurfaceVariant,
+    marginTop: M3Spacing.sm,
     textAlign: 'center',
   },
   innerBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: M3Radius.medium,
     width: 24,
     height: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: M3Spacing.xs,
   },
   innerBadgeText: {
-    color: '#fff',
+    color: M3Colors.onSurface,
     fontSize: 9,
     fontWeight: '800',
     textAlign: 'center',
@@ -605,37 +608,34 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderStyle: 'dashed',
-    borderWidth: 1, // required for dashed border on some versions, but height 1 works usually. 
-    // Actually for dashed line in RN:
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: hexToRgba(M3Colors.onSurface, 0.3),
     borderTopWidth: 1,
-    zIndex: 0, // behind bars? or on top? On top is better visibility
+    borderStyle: 'dashed',
+    zIndex: 1,
   },
-
-
   emptyText: {
-    marginTop: 8,
-    color: '#bbb',
+    ...M3Typography.bodyMedium,
+    marginTop: M3Spacing.sm,
+    color: M3Colors.onSurfaceVariant,
     textAlign: 'center',
     fontStyle: 'italic',
   },
 
-  timelineContainer: {
-    marginTop: 8,
-    gap: 10,
+  // --- Today's Timeline ---
+  timelineList: {
+    marginTop: M3Spacing.md,
+    gap: M3Spacing.md,
   },
   timelineItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: M3Spacing.md,
   },
   timelineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#fb923c',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 5,
   },
   timelineContent: {
     flex: 1,
@@ -644,74 +644,92 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  timelineText: {
-    color: '#fff',
-    fontWeight: '600',
+  timelineTime: {
+    ...M3Typography.titleSmall,
+    color: M3Colors.onSurface,
   },
   timelineValue: {
+    ...M3Typography.titleSmall,
     marginLeft: 'auto',
-    color: '#fb923c',
-    fontWeight: '700',
   },
   timelineNote: {
+    ...M3Typography.bodySmall,
     marginTop: 2,
-    color: '#bbb',
-    fontSize: 12,
+    color: M3Colors.onSurfaceVariant,
   },
-  // Modal + input styles (match app theme)
+
+  // --- Modal ---
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: M3Spacing.xxl,
   },
   modalContent: {
-    backgroundColor: '#1f1f29',
-    borderRadius: 20,
+    backgroundColor: M3Colors.surfaceContainerHigh,
+    borderRadius: M3Radius.extraLarge,
     width: '100%',
-    padding: 24,
+    padding: M3Spacing.xxl,
+    gap: M3Spacing.md,
   },
-  inputLabel: {
-    color: '#ccc',
-    fontSize: 14,
-    marginTop: 8,
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: '#2a2a35',
-    color: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  modalTitle: {
+    ...M3Typography.titleLarge,
+    color: M3Colors.onSurface,
   },
   modalActions: {
-    marginTop: 16,
+    marginTop: M3Spacing.lg,
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    gap: M3Spacing.md,
   },
   modalButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginLeft: 12,
-  },
-  cancelButton: {
-    backgroundColor: '#2a2a35',
-  },
-  saveButton: {
-    backgroundColor: '#4c6ef5',
+    paddingVertical: M3Spacing.md,
+    paddingHorizontal: M3Spacing.xl,
+    borderRadius: M3Radius.medium,
   },
   modalButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    ...M3Typography.labelLarge,
+    color: M3Colors.onSurface,
   },
-  saveButtonText: {
-    color: '#fff',
+  modalCancelButton: {
+    backgroundColor: M3Colors.surfaceContainer,
+  },
+  modalSaveButton: {
+    backgroundColor: M3Colors.primary,
+  },
+
+  // --- Extra Edit Fields ---
+  extraFieldsContainer: {
+    marginTop: M3Spacing.lg,
+    gap: M3Spacing.lg,
+  },
+  fieldLabel: {
+    ...M3Typography.labelMedium,
+    color: M3Colors.onSurfaceVariant,
+    marginBottom: M3Spacing.xs,
+  },
+  fieldInput: {
+    backgroundColor: M3Colors.surfaceContainerHigh,
+    color: M3Colors.onSurface,
+    borderRadius: M3Radius.medium,
+    paddingHorizontal: M3Spacing.lg,
+    paddingVertical: M3Spacing.md,
+    fontSize: 14,
   },
   inlineInputRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: M3Spacing.md,
     alignItems: 'center',
+  },
+  inlineSetButton: {
+    backgroundColor: M3Colors.primary,
+    paddingVertical: M3Spacing.md,
+    paddingHorizontal: M3Spacing.xl,
+    borderRadius: M3Radius.medium,
+  },
+  inlineSetButtonText: {
+    ...M3Typography.labelLarge,
+    color: M3Colors.onPrimary,
   },
 });

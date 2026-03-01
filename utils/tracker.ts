@@ -2,8 +2,9 @@ import {
   COLD_TURKEY_MILESTONES,
   type ColdTurkeyMilestone,
 } from '@/constants/coldTurkeyMilestones';
+import { M3Colors } from '@/constants/theme';
 import { TrackerType } from '@/enums/TrackerType';
-import type { ColdTurkeyResetEntry, DoseDecreaseTrackedItem, DosageUnit } from '@/types/tracking';
+import type { ColdTurkeyResetEntry, DosageUnit, DoseDecreaseTrackedItem } from '@/types/tracking';
 
 type TimeUnit = {
   label: string;
@@ -23,10 +24,10 @@ const TIME_UNITS: TimeUnit[] = [
 
 export const getTrackerIcon = (type: TrackerType) => {
   if (type === TrackerType.SlowLoweringTheDosage) {
-    return { name: 'arrow-trend-down' as const, color: '#fb923c' };
+    return { name: 'arrow-trend-down' as const, color: M3Colors.vibrantOrange };
   }
 
-  return { name: 'hand-back-fist' as const, color: '#34d399' };
+  return { name: 'hand-back-fist' as const, color: M3Colors.vibrantTeal };
 };
 
 const convertAmount = (value: number, from: DosageUnit, to: DosageUnit): number => {
@@ -213,44 +214,44 @@ export type ElapsedBreakdownEntry = {
 };
 
 export const getElapsedBreakdown = (
-    elapsedMs: number,
-    parts: number = 3
+  elapsedMs: number,
+  parts: number = 3
 ): ElapsedBreakdownEntry[] => {
-    const result: ElapsedBreakdownEntry[] = [];
-    let remainder = Math.max(0, elapsedMs);
-    let lastAddedIndex = -1; // index into TIME_UNITS for the last non-zero unit we added
+  const result: ElapsedBreakdownEntry[] = [];
+  let remainder = Math.max(0, elapsedMs);
+  let lastAddedIndex = -1; // index into TIME_UNITS for the last non-zero unit we added
 
-    for (let i = 0; i < TIME_UNITS.length; i++) {
-        if (result.length >= parts) break;
-        const unit = TIME_UNITS[i];
-        const count = Math.floor(remainder / unit.durationMs);
-        if (count > 0) {
-            result.push({
-                value: count,
-                unit: count === 1 ? unit.label : `${unit.label}s`,
-            });
-            remainder -= count * unit.durationMs;
-            lastAddedIndex = i;
-        }
+  for (let i = 0; i < TIME_UNITS.length; i++) {
+    if (result.length >= parts) break;
+    const unit = TIME_UNITS[i];
+    const count = Math.floor(remainder / unit.durationMs);
+    if (count > 0) {
+      result.push({
+        value: count,
+        unit: count === 1 ? unit.label : `${unit.label}s`,
+      });
+      remainder -= count * unit.durationMs;
+      lastAddedIndex = i;
     }
+  }
 
-    // If everything was < 1s, show a single "0 seconds" so UI isn't empty
-    if (result.length === 0) {
-        const sec = TIME_UNITS[TIME_UNITS.length - 1]; // seconds
-        const count = Math.floor(remainder / sec.durationMs); // 0 for <1s
-        result.push({ value: count, unit: 'seconds' });
-    } else if (result.length < parts) {
-        // Also show the next smaller unit even if it's 0 (e.g., "5 minutes 0 seconds")
-        const nextIndex = lastAddedIndex + 1;
-        if (nextIndex > lastAddedIndex && nextIndex < TIME_UNITS.length) {
-            const nextUnit = TIME_UNITS[nextIndex];
-            const nextCount = Math.floor(remainder / nextUnit.durationMs); // likely 0
-            result.push({
-                value: nextCount,
-                unit: nextCount === 1 ? nextUnit.label : `${nextUnit.label}s`,
-            });
-        }
+  // If everything was < 1s, show a single "0 seconds" so UI isn't empty
+  if (result.length === 0) {
+    const sec = TIME_UNITS[TIME_UNITS.length - 1]; // seconds
+    const count = Math.floor(remainder / sec.durationMs); // 0 for <1s
+    result.push({ value: count, unit: 'seconds' });
+  } else if (result.length < parts) {
+    // Also show the next smaller unit even if it's 0 (e.g., "5 minutes 0 seconds")
+    const nextIndex = lastAddedIndex + 1;
+    if (nextIndex > lastAddedIndex && nextIndex < TIME_UNITS.length) {
+      const nextUnit = TIME_UNITS[nextIndex];
+      const nextCount = Math.floor(remainder / nextUnit.durationMs); // likely 0
+      result.push({
+        value: nextCount,
+        unit: nextCount === 1 ? nextUnit.label : `${nextUnit.label}s`,
+      });
     }
+  }
 
-    return result;
+  return result;
 };
