@@ -22,7 +22,7 @@ Built with Expo Router, React Native, and local persistence (AsyncStorage). Runs
 
 #### Home
 
-  <img src="docs/screenshots/MainPageWithItems.png" alt="Home – List" width="400" />
+<img src="docs/screenshots/MainPageWithItems.png" alt="Home – List" width="400" />
 
 #### Cold Turkey detail
 
