@@ -37,8 +37,7 @@ export default function HomeScreen() {
             <View style={styles.container}>
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.heading}>My Tracking</Text>
-                        <Text style={styles.subheading}>Stay accountable every day</Text>
+                        <Text style={styles.heading}>My Trackers</Text>
                     </View>
                     <TouchableOpacity
                         accessibilityLabel="Add a tracker"
