@@ -32,10 +32,25 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
   const [editValue, setEditValue] = useState<string>('');
 
   const [defaultDoseInput, setDefaultDoseInput] = useState<string>(item.defaultDose ? String(item.defaultDose) : '');
+  const [dailyIntakeInput, setDailyIntakeInput] = useState<string>(String(item.currentUsageValue));
 
   useEffect(() => {
     setDefaultDoseInput(item.defaultDose ? String(item.defaultDose) : '');
   }, [item.defaultDose]);
+
+  useEffect(() => {
+    setDailyIntakeInput(String(item.currentUsageValue));
+  }, [item.currentUsageValue]);
+
+  const handleSaveDailyIntake = () => {
+    const val = Number.parseFloat(dailyIntakeInput);
+    if (!Number.isFinite(val) || val <= 0) {
+      Alert.alert('Error', 'Please enter a valid positive number');
+      return;
+    }
+    updateItem({ ...item, currentUsageValue: val });
+    Alert.alert('Updated', `Current daily intake set to ${val} ${item.currentUsageUnit}`);
+  };
 
   const handleSaveDefaultDose = () => {
     const val = Number.parseFloat(defaultDoseInput);
@@ -175,20 +190,38 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
     <TrackerDetailTemplate
       {...props}
       extraEditFields={
-        <View style={{ marginTop: 16 }}>
-          <Text style={styles.inputLabel}>Default Dose Amount ({item.currentUsageUnit})</Text>
-          <View style={styles.inlineInputRow}>
-            <TextInput
-              value={defaultDoseInput}
-              onChangeText={setDefaultDoseInput}
-              placeholder="e.g. 3"
-              placeholderTextColor="#666"
-              style={[styles.input, { flex: 1 }]}
-              keyboardType="decimal-pad"
-            />
-            <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveDefaultDose}>
-              <Text style={styles.saveButtonText}>Set Default</Text>
-            </TouchableOpacity>
+        <View style={{ marginTop: 16, gap: 16 }}>
+          <View>
+            <Text style={styles.inputLabel}>Current Daily Intake ({item.currentUsageUnit})</Text>
+            <View style={styles.inlineInputRow}>
+              <TextInput
+                value={dailyIntakeInput}
+                onChangeText={setDailyIntakeInput}
+                placeholder="e.g. 5"
+                placeholderTextColor="#666"
+                style={[styles.input, { flex: 1 }]}
+                keyboardType="decimal-pad"
+              />
+              <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveDailyIntake}>
+                <Text style={styles.saveButtonText}>Set</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <Text style={styles.inputLabel}>Default Dose Amount ({item.currentUsageUnit})</Text>
+            <View style={styles.inlineInputRow}>
+              <TextInput
+                value={defaultDoseInput}
+                onChangeText={setDefaultDoseInput}
+                placeholder="e.g. 3"
+                placeholderTextColor="#666"
+                style={[styles.input, { flex: 1 }]}
+                keyboardType="decimal-pad"
+              />
+              <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={handleSaveDefaultDose}>
+                <Text style={styles.saveButtonText}>Set Default</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       }

@@ -8,11 +8,11 @@ import { useElapsedBreakdown } from '@/hooks/useElapsedBreakdown';
 import { ColdTurkeyTrackedItem } from '@/types/tracking';
 import { formatDateForDisplay, formatTimeLeft } from '@/utils/date';
 import {
-    formatElapsedDurationLabel,
     getColdTurkeyProgress,
     getTrackerIcon
 } from '@/utils/tracker';
 
+import { ResetHistoryCalendar } from './ResetHistoryCalendar';
 import { TrackerDetailTemplate } from './TrackerDetailTemplate';
 import { TrackingStatsCard } from './TrackingStatsCard';
 
@@ -122,39 +122,11 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                             accentColor={tintColor}
                         />
 
-                        {/* RESET HISTORY LIST */}
-                        {item.resetHistory && item.resetHistory.length > 0 && (
-                            <View style={styles.historySection}>
-                                <Text style={styles.sectionTitle}>Reset History</Text>
-                                <View style={styles.historyList}>
-                                    {[...(item.resetHistory ?? [])]
-                                        .sort((a, b) => new Date(b.resetAt).getTime() - new Date(a.resetAt).getTime())
-                                        .map((entry, index) => {
-                                            const durationMs = new Date(entry.resetAt).getTime() - new Date(entry.startedAt).getTime();
-                                            const durationLabel = formatElapsedDurationLabel(durationMs);
-
-                                            // Expressive Timeline Row
-                                            return (
-                                                <View key={index} style={styles.historyRow}>
-                                                    {/* Timeline visual */}
-                                                    <View style={styles.historyTimelineColumn}>
-                                                        <View style={[styles.historyDot, { borderColor: tintColor }]} />
-                                                        {index < (item.resetHistory?.length ?? 0) - 1 && <View style={styles.historyLine} />}
-                                                    </View>
-
-                                                    {/* Content */}
-                                                    <View style={styles.historyContent}>
-                                                        <Text style={styles.historyDate}>{formatDateForDisplay(entry.resetAt)}</Text>
-                                                        <Text style={styles.historyDuration}>
-                                                            Lasted {durationLabel}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                            );
-                                        })}
-                                </View>
-                            </View>
-                        )}
+                        {/* RESET HISTORY CALENDAR */}
+                        <ResetHistoryCalendar
+                            resetHistory={item.resetHistory}
+                            accentColor={tintColor}
+                        />
                     </>
                 );
             }}
@@ -163,58 +135,6 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
 }
 
 const styles = StyleSheet.create({
-    historySection: {
-        marginTop: M3Spacing.xxl,
-        paddingTop: M3Spacing.xl,
-        borderTopWidth: 1,
-        borderTopColor: M3Colors.outlineVariant,
-    },
-    sectionTitle: {
-        ...M3Typography.titleMedium,
-        color: M3Colors.onSurface,
-        marginBottom: M3Spacing.lg,
-    },
-    historyList: {
-        gap: 0,
-    },
-    historyRow: {
-        flexDirection: 'row',
-        minHeight: 56,
-    },
-    historyTimelineColumn: {
-        width: 24,
-        alignItems: 'center',
-    },
-    historyDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        borderWidth: 2,
-        backgroundColor: M3Colors.surface,
-        borderColor: M3Colors.primary, // Type safety fallback
-        marginTop: 6,
-        zIndex: 1,
-    },
-    historyLine: {
-        flex: 1,
-        width: 2,
-        backgroundColor: M3Colors.surfaceContainerHigh,
-        marginVertical: 4,
-    },
-    historyContent: {
-        flex: 1,
-        paddingLeft: M3Spacing.md,
-        paddingBottom: M3Spacing.lg,
-    },
-    historyDate: {
-        ...M3Typography.labelLarge,
-        color: M3Colors.onSurface,
-        marginBottom: 2,
-    },
-    historyDuration: {
-        ...M3Typography.bodyMedium,
-        color: M3Colors.onSurfaceVariant,
-    },
 
     heroContainer: {
         marginBottom: M3Spacing.xxl,
