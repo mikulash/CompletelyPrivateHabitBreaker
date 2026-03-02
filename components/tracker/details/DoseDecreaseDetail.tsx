@@ -6,8 +6,8 @@ import { Text } from '@/components/Themed';
 import { hexToRgba, M3Colors, M3Radius, M3Spacing, M3Typography } from '@/constants/theme';
 import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 import { DosageUnit, DoseDecreaseTrackedItem } from '@/types/tracking';
-import { calculateDaysTracked, formatDateForDisplay } from '@/utils/date';
-import { getTrackerIcon } from '@/utils/tracker';
+import { calculateDaysTracked, formatDateForDisplay, formatDurationWithOverdue } from '@/utils/date';
+import { calculateAveragePause, formatElapsedDurationLabel, getLastDoseGrouped, getTrackerIcon } from '@/utils/tracker';
 
 import { TrackerDetailTemplate } from './TrackerDetailTemplate';
 import { TrackingStatsCard } from './TrackingStatsCard';
@@ -33,6 +33,14 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
 
   const [defaultDoseInput, setDefaultDoseInput] = useState<string>(item.defaultDose ? String(item.defaultDose) : '');
   const [dailyIntakeInput, setDailyIntakeInput] = useState<string>(String(item.currentUsageValue));
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNowMs(Date.now());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setDefaultDoseInput(item.defaultDose ? String(item.defaultDose) : '');
@@ -259,6 +267,11 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
         const avgInSlice = slice.length > 0 ? (totalInSlice / slice.length).toFixed(2) : '0';
         const displayAvg = Number(avgInSlice);
 
+        const avgPause = calculateAveragePause(item);
+        const lastDoseTime = getLastDoseGrouped(item);
+        const showTimer = (daysTracked ?? 0) >= 3 && avgPause !== null && lastDoseTime !== null;
+        const timerData = showTimer ? formatDurationWithOverdue(lastDoseTime + avgPause, nowMs) : null;
+
         return (
           <>
             {/* HERO SECTION — mirrors ColdTurkeyDetail */}
@@ -291,6 +304,27 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                   <Text style={styles.metaText}>{formatDateForDisplay(item.startedAt)}</Text>
                 </View>
               </View>
+
+              {showTimer && timerData && (
+                <View style={[styles.timerSection, { marginTop: M3Spacing.md }]}>
+                  <View style={styles.metaBadge}>
+                    <FontAwesome6 name="clock-rotate-left" size={12} color={M3Colors.onSurfaceVariant} />
+                    <Text style={styles.metaText}>
+                      Avg Pause: {formatElapsedDurationLabel(avgPause, 2)}
+                    </Text>
+                  </View>
+                  <View style={[styles.metaBadge, timerData.isOverdue && { backgroundColor: hexToRgba(M3Colors.error, 0.1) }]}>
+                    <FontAwesome6
+                      name={timerData.isOverdue ? 'triangle-exclamation' : 'clock'}
+                      size={12}
+                      color={timerData.isOverdue ? M3Colors.error : M3Colors.onSurfaceVariant}
+                    />
+                    <Text style={[styles.metaText, timerData.isOverdue && { color: M3Colors.error }]}>
+                      Next dose {timerData.text}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* TRACKING STATS */}
@@ -576,6 +610,12 @@ const styles = StyleSheet.create({
   metaText: {
     ...M3Typography.labelMedium,
     color: M3Colors.onSurfaceVariant,
+  },
+  timerSection: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: M3Spacing.sm,
   },
 
   // --- Card Shell ---

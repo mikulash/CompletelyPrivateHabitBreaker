@@ -48,22 +48,52 @@ const DAY_MS = 24 * HOUR_MS;
 const MONTH_MS = 30 * DAY_MS;
 
 export function formatTimeLeft(ms: number): string {
-    if (ms <= 0) return 'now';
-    if (ms < HOUR_MS) {
-        const m = Math.ceil(ms / MINUTE_MS);
-        return `${m}m`;
-    }
-    if (ms < DAY_MS) {
-        const h = Math.floor(ms / HOUR_MS);
-        const m = Math.floor((ms % HOUR_MS) / MINUTE_MS);
-        return m ? `${h}h ${m}m` : `${h}h`;
-    }
-    if (ms < MONTH_MS) {
-        const d = Math.floor(ms / DAY_MS);
-        const h = Math.floor((ms % DAY_MS) / HOUR_MS);
-        return h ? `${d}d ${h}h` : `${d}d`;
-    }
-    // Fallback for >= 1 month
+  if (ms <= 0) return 'now';
+  if (ms < HOUR_MS) {
+    const m = Math.ceil(ms / MINUTE_MS);
+    return `${m}m`;
+  }
+  if (ms < DAY_MS) {
+    const h = Math.floor(ms / HOUR_MS);
+    const m = Math.floor((ms % HOUR_MS) / MINUTE_MS);
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+  if (ms < MONTH_MS) {
     const d = Math.floor(ms / DAY_MS);
-    return `${d}d`;
+    const h = Math.floor((ms % DAY_MS) / HOUR_MS);
+    return h ? `${d}d ${h}h` : `${d}d`;
+  }
+  // Fallback for >= 1 month
+  const d = Math.floor(ms / DAY_MS);
+  return `${d}d`;
+}
+
+export function formatDurationWithOverdue(targetTimeMs: number, nowMs: number): { text: string; isOverdue: boolean } {
+  const diff = targetTimeMs - nowMs;
+  const isOverdue = diff < 0;
+  const absDiff = Math.abs(diff);
+
+  // If less than a minute, just show "now"
+  if (absDiff < MINUTE_MS) {
+    return { text: isOverdue ? 'overdue' : 'now', isOverdue };
+  }
+
+  let formatted = '';
+  if (absDiff < HOUR_MS) {
+    const m = Math.floor(absDiff / MINUTE_MS);
+    formatted = `${m}m`;
+  } else if (absDiff < DAY_MS) {
+    const h = Math.floor(absDiff / HOUR_MS);
+    const m = Math.floor((absDiff % HOUR_MS) / MINUTE_MS);
+    formatted = m ? `${h}h ${m}m` : `${h}h`;
+  } else {
+    const d = Math.floor(absDiff / DAY_MS);
+    const h = Math.floor((absDiff % DAY_MS) / HOUR_MS);
+    formatted = h ? `${d}d ${h}h` : `${d}d`;
+  }
+
+  return {
+    text: isOverdue ? `overdue by ${formatted}` : `in ${formatted}`,
+    isOverdue
+  };
 }

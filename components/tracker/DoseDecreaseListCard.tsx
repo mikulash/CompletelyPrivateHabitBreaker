@@ -1,13 +1,13 @@
 import { FontAwesome6 } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
 import { getTonalSurfaceColor, hexToRgba, M3Colors, M3Radius, M3Spacing, M3Typography } from '@/constants/theme';
 import { useTrackedItems } from '@/contexts/TrackedItemsContext';
 import { DoseDecreaseTrackedItem } from '@/types/tracking';
-import { calculateDaysTracked } from '@/utils/date';
-import { getTodaysDoseTotal, getTrackerIcon } from '@/utils/tracker';
+import { calculateDaysTracked, formatDurationWithOverdue } from '@/utils/date';
+import { calculateAveragePause, getLastDoseGrouped, getTodaysDoseTotal, getTrackerIcon } from '@/utils/tracker';
 
 type Props = {
   item: DoseDecreaseTrackedItem;
@@ -17,6 +17,14 @@ type Props = {
 export function DoseDecreaseListCard({ item, onPress }: Readonly<Props>) {
   const { updateItem } = useTrackedItems();
   const [doseInput, setDoseInput] = useState<string>('');
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNowMs(Date.now());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const daysTracked = calculateDaysTracked(item.startedAt);
   const icon = getTrackerIcon(item.type);
@@ -65,6 +73,10 @@ export function DoseDecreaseListCard({ item, onPress }: Readonly<Props>) {
   };
 
   const tintColor = M3Colors.vibrantOrange;
+  const avgPause = calculateAveragePause(item);
+  const lastDoseTime = getLastDoseGrouped(item);
+  const showTimer = (daysTracked ?? 0) >= 3 && avgPause !== null && lastDoseTime !== null;
+  const timerData = showTimer ? formatDurationWithOverdue(lastDoseTime + avgPause, nowMs) : null;
 
   return (
     <TouchableOpacity
@@ -95,6 +107,23 @@ export function DoseDecreaseListCard({ item, onPress }: Readonly<Props>) {
             <Text style={styles.heroLabel}>today</Text>
           </View>
         </View>
+
+        {/* Timer */}
+        {showTimer && timerData && (
+          <View style={styles.timerSection}>
+            <FontAwesome6
+              name={timerData.isOverdue ? "triangle-exclamation" : "clock"}
+              size={12}
+              color={timerData.isOverdue ? M3Colors.error : M3Colors.onSurfaceVariant}
+            />
+            <Text style={[
+              styles.timerText,
+              timerData.isOverdue && { color: M3Colors.error, fontWeight: '600' }
+            ]}>
+              Next dose {timerData.text}
+            </Text>
+          </View>
+        )}
 
         {/* Quick Log Action */}
         <View style={styles.actionSection}>
@@ -176,6 +205,21 @@ const styles = StyleSheet.create({
   },
   heroLabel: {
     ...M3Typography.bodySmall,
+    color: M3Colors.onSurfaceVariant,
+  },
+  timerSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: M3Spacing.xs,
+    marginBottom: M3Spacing.lg,
+    paddingHorizontal: M3Spacing.sm,
+    paddingVertical: M3Spacing.xs,
+    backgroundColor: M3Colors.surfaceContainerHigh,
+    alignSelf: 'flex-start',
+    borderRadius: M3Radius.medium,
+  },
+  timerText: {
+    ...M3Typography.labelMedium,
     color: M3Colors.onSurfaceVariant,
   },
   actionSection: {

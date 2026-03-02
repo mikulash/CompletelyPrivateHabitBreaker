@@ -255,3 +255,64 @@ export const getElapsedBreakdown = (
 
   return result;
 };
+
+export const getFilteredAndGroupedDoses = (item: DoseDecreaseTrackedItem): number[] => {
+  const logs = item.doseLogs ?? [];
+  if (logs.length === 0) return [];
+
+  const now = Date.now();
+  const threeDaysAgo = now - 3 * 24 * 60 * 60 * 1000;
+
+  const recentLogs = logs
+    .map(l => new Date(l.at).getTime())
+    .filter(t => !Number.isNaN(t) && t >= threeDaysAgo && t <= now)
+    .sort((a, b) => a - b);
+
+  if (recentLogs.length === 0) return [];
+
+  const grouped: number[] = [];
+  let currentGroupStart = recentLogs[0];
+
+  for (let i = 1; i < recentLogs.length; i++) {
+    const time = recentLogs[i];
+    if (time - currentGroupStart <= 15 * 60 * 1000) {
+      // within 15 mins, ignore (keep the earliest of the group)
+    } else {
+      grouped.push(currentGroupStart);
+      currentGroupStart = time;
+    }
+  }
+  grouped.push(currentGroupStart);
+
+  return grouped;
+};
+
+export const calculateAveragePause = (item: DoseDecreaseTrackedItem): number | null => {
+  const grouped = getFilteredAndGroupedDoses(item);
+  if (grouped.length < 2) return null;
+
+  const intervals: number[] = [];
+  for (let i = 1; i < grouped.length; i++) {
+    intervals.push(grouped[i] - grouped[i - 1]);
+  }
+
+  const sum = intervals.reduce((acc, val) => acc + val, 0);
+  return sum / intervals.length;
+};
+
+export const getLastDoseGrouped = (item: DoseDecreaseTrackedItem): number | null => {
+  const grouped = getFilteredAndGroupedDoses(item);
+  if (grouped.length > 0) {
+    return grouped[grouped.length - 1];
+  }
+
+  // Fallback if no recent doses in last 3 days
+  const logs = item.doseLogs ?? [];
+  if (logs.length === 0) return null;
+  const valid = logs
+    .map(l => new Date(l.at).getTime())
+    .filter(t => !Number.isNaN(t))
+    .sort((a, b) => a - b);
+  if (valid.length === 0) return null;
+  return valid[valid.length - 1];
+};
