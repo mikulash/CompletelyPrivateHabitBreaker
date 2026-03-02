@@ -1,6 +1,6 @@
 import { FontAwesome6 } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
 import { hexToRgba, M3Colors, M3Radius, M3Spacing, M3Typography } from '@/constants/theme';
@@ -27,7 +27,7 @@ type ColdTurkeyDetailProps = {
     onDelete: () => void;
 };
 
-export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
+export function ColdTurkeyDetail(props: Readonly<ColdTurkeyDetailProps>) {
     const { item } = props;
     const breakdown = useElapsedBreakdown(item.startedAt);
     const progress = getColdTurkeyProgress(item.startedAt);
@@ -41,7 +41,6 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
             {...props}
             renderSummary={(item) => {
                 const icon = getTrackerIcon(item.type);
-                const nextLabel = progress.next ? progress.next.label : 'Maximum Achievement';
 
                 return (
                     <>
@@ -75,7 +74,19 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                         <View style={[styles.card, { borderColor: hexToRgba(tintColor, 0.3) }]}>
                             <View style={styles.cardHeader}>
                                 <Text style={styles.cardTitle}>Current Journey</Text>
-                                <Text style={styles.cardSubtitle}>Next: {nextLabel}</Text>
+                                {progress.next ? (
+                                    <View style={styles.nextMilestoneBadge}>
+                                        <Text style={styles.cardSubtitle}>Next:</Text>
+                                        <View style={[styles.medalBadge, { backgroundColor: M3Colors.surfaceContainerHigh, borderColor: hexToRgba(M3Colors.onSurfaceVariant, 0.2) }]}>
+                                            <View style={[styles.medalIcon, { backgroundColor: hexToRgba(M3Colors.onSurfaceVariant, 0.15) }]}>
+                                                <FontAwesome6 name="medal" size={10} color={M3Colors.onSurfaceVariant} />
+                                            </View>
+                                            <Text style={[styles.medalText, { color: M3Colors.onSurfaceVariant }]}>{progress.next.label}</Text>
+                                        </View>
+                                    </View>
+                                ) : (
+                                    <Text style={styles.cardSubtitle}>Maximum Achievement</Text>
+                                )}
                             </View>
 
                             {/* Visual Timeline Bar */}
@@ -113,6 +124,23 @@ export function ColdTurkeyDetail(props: ColdTurkeyDetailProps) {
                                     </Text>
                                 </View>
                             </View>
+
+                            {/* Added Milestones Row */}
+                            {progress.achieved.length > 0 && (
+                                <View style={styles.milestonesSection}>
+                                    <Text style={styles.milestonesTitle}>Achieved Milestones</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.milestonesScroll}>
+                                        {progress.achieved.toReversed().map((m, i) => (
+                                            <View key={m.label} style={[styles.medalBadge, { backgroundColor: m.color.bg, borderColor: m.color.border }]}>
+                                                <View style={[styles.medalIcon, { backgroundColor: m.color.iconBg }]}>
+                                                    <FontAwesome6 name="medal" size={10} color={m.color.text} />
+                                                </View>
+                                                <Text style={[styles.medalText, { color: m.color.text }]}>{m.label}</Text>
+                                            </View>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            )}
                         </View>
 
                         {/* STATS BENTO BOX */}
@@ -202,6 +230,11 @@ const styles = StyleSheet.create({
         ...M3Typography.labelMedium,
         color: M3Colors.onSurfaceVariant,
     },
+    nextMilestoneBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
 
     // Timeline Visuals
     timelineContainer: {
@@ -269,5 +302,42 @@ const styles = StyleSheet.create({
     metaText: {
         ...M3Typography.labelMedium,
         color: M3Colors.onSurfaceVariant,
+    },
+
+    milestonesSection: {
+        marginTop: M3Spacing.lg,
+        paddingTop: M3Spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: M3Colors.surfaceContainerHigh,
+    },
+    milestonesTitle: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: M3Colors.onSurfaceVariant,
+        marginBottom: M3Spacing.sm,
+    },
+    milestonesScroll: {
+        gap: M3Spacing.sm,
+        paddingBottom: M3Spacing.xs,
+    },
+    medalBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: M3Radius.full,
+        borderWidth: 1,
+        gap: 6,
+    },
+    medalIcon: {
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    medalText: {
+        fontSize: 12,
+        fontWeight: 'bold',
     },
 });

@@ -1,7 +1,9 @@
+import { FontAwesome6 } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
+import { COLD_TURKEY_MILESTONES } from '@/constants/coldTurkeyMilestones';
 import { M3Colors, M3Radius, M3Spacing, hexToRgba } from '@/constants/theme';
 import type { ColdTurkeyResetEntry } from '@/types/tracking';
 import { formatElapsedDurationLabel, getTrackingResetStats } from '@/utils/tracker';
@@ -12,17 +14,21 @@ type TrackingStatsCardProps = {
   accentColor: string;
 };
 
-export function TrackingStatsCard({ startedAt, resetHistory, accentColor }: TrackingStatsCardProps) {
+export function TrackingStatsCard({ startedAt, resetHistory, accentColor }: Readonly<TrackingStatsCardProps>) {
   const stats = getTrackingResetStats(startedAt, resetHistory);
 
   const trackingLabel =
-    stats.totalTrackedMs !== null ? formatElapsedDurationLabel(stats.totalTrackedMs, 2) : 'N/A';
+    stats.totalTrackedMs === null ? 'N/A' : formatElapsedDurationLabel(stats.totalTrackedMs, 2);
   const averageLabel =
-    stats.averageBetweenResetsMs !== null
-      ? formatElapsedDurationLabel(stats.averageBetweenResetsMs, 2)
-      : 'N/A';
+    stats.averageBetweenResetsMs === null
+        ? 'N/A'
+        : formatElapsedDurationLabel(stats.averageBetweenResetsMs, 2);
   const maxLabel =
-    stats.maxBetweenResetsMs !== null ? formatElapsedDurationLabel(stats.maxBetweenResetsMs, 2) : 'N/A';
+    stats.maxBetweenResetsMs === null ? 'N/A' : formatElapsedDurationLabel(stats.maxBetweenResetsMs, 2);
+
+  const recordMilestones = COLD_TURKEY_MILESTONES.filter(
+    (m) => stats.maxBetweenResetsMs !== null && stats.maxBetweenResetsMs >= m.durationMs
+  );
 
   return (
     <View style={[styles.card, { borderColor: hexToRgba(accentColor, 0.5) }]}>
@@ -46,6 +52,22 @@ export function TrackingStatsCard({ startedAt, resetHistory, accentColor }: Trac
           <Text style={[styles.statValue, { color: accentColor }]}>{maxLabel}</Text>
         </View>
       </View>
+
+      {recordMilestones.length > 0 && (
+        <View style={styles.milestonesSection}>
+          <Text style={styles.milestonesTitle}>Record Milestones</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.milestonesScroll}>
+            {recordMilestones.toReversed().map((m, i) => (
+              <View key={m.label} style={[styles.medalBadge, { backgroundColor: m.color.bg, borderColor: m.color.border }]}>
+                <View style={[styles.medalIcon, { backgroundColor: m.color.iconBg }]}>
+                  <FontAwesome6 name="medal" size={10} color={m.color.text} />
+                </View>
+                <Text style={[styles.medalText, { color: m.color.text }]}>{m.label}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 }
@@ -82,6 +104,42 @@ const styles = StyleSheet.create({
     marginTop: M3Spacing.xs,
     fontSize: 16,
     fontWeight: '600',
+  },
+  milestonesSection: {
+    marginTop: M3Spacing.md,
+    paddingTop: M3Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: M3Colors.surfaceContainerHigh,
+  },
+  milestonesTitle: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: M3Colors.onSurfaceVariant,
+    marginBottom: M3Spacing.sm,
+  },
+  milestonesScroll: {
+    gap: M3Spacing.sm,
+    paddingBottom: M3Spacing.xs,
+  },
+  medalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: M3Radius.full,
+    borderWidth: 1,
+    gap: 6,
+  },
+  medalIcon: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  medalText: {
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 
