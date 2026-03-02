@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {
     PropsWithChildren,
     createContext,
@@ -7,10 +8,10 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { TRACKED_ITEMS_STORAGE_KEY } from '@/constants/storage';
 import { TrackerItem } from '@/types/tracking';
+import { cancelTrackerMilestoneNotifications, scheduleTrackerMilestoneNotifications } from '@/utils/notifications';
 
 type TrackedItemsContextValue = {
     items: TrackerItem[];
@@ -23,7 +24,7 @@ type TrackedItemsContextValue = {
 
 const TrackedItemsContext = createContext<TrackedItemsContextValue | undefined>(undefined);
 
-export function TrackedItemsProvider({ children }: PropsWithChildren) {
+export function TrackedItemsProvider({ children }: Readonly<PropsWithChildren>) {
     const [items, setItems] = useState<TrackerItem[]>([]);
     const [isLoading, setLoading] = useState(true);
 
@@ -68,14 +69,25 @@ export function TrackedItemsProvider({ children }: PropsWithChildren) {
 
     const addItem = useCallback((item: TrackerItem) => {
         setItems((previous) => [...previous, item]);
+        void scheduleTrackerMilestoneNotifications(item.id, item.name, item.startedAt);
     }, []);
 
     const updateItem = useCallback((item: TrackerItem) => {
-        setItems((previous) => previous.map((existing) => (existing.id === item.id ? item : existing)));
+        setItems((previous) => previous.map((existing) => {
+            if (existing.id === item.id) {
+                // If startedAt was changed (tracker renamed or reset) we re-schedule
+                if (existing.startedAt !== item.startedAt || existing.name !== item.name) {
+                    void scheduleTrackerMilestoneNotifications(item.id, item.name, item.startedAt);
+                }
+                return item;
+            }
+            return existing;
+        }));
     }, []);
 
     const removeItem = useCallback((id: string) => {
         setItems((previous) => previous.filter((item) => item.id !== id));
+        void cancelTrackerMilestoneNotifications(id);
     }, []);
 
     const value = useMemo(

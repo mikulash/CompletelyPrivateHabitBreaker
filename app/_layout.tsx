@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 
 import { M3Colors } from '@/constants/theme';
 import { TrackedItemsProvider } from '@/contexts/TrackedItemsContext';
+import { requestNotificationPermissions } from '../utils/notifications';
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -50,6 +51,7 @@ export default function RootLayout() {
     useEffect(() => {
         if (loaded) {
             SplashScreen.hideAsync();
+            requestNotificationPermissions();
         }
     }, [loaded]);
 
