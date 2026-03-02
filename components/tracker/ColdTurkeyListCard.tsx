@@ -20,9 +20,11 @@ const GOLD_BORDER = 'rgba(255, 215, 0, 0.55)';
 type Props = {
     item: ColdTurkeyTrackedItem;
     onPress: () => void;
+    onLongPress?: () => void;
+    isActive?: boolean;
 };
 
-export function ColdTurkeyListCard({ item, onPress }: Props) {
+export function ColdTurkeyListCard({ item, onPress, onLongPress, isActive }: Props) {
     const icon = getTrackerIcon(item.type);
     const progress = getColdTurkeyProgress(item.startedAt);
     const breakdown = useElapsedBreakdown(item.startedAt);
@@ -56,11 +58,15 @@ export function ColdTurkeyListCard({ item, onPress }: Props) {
         <TouchableOpacity
             accessibilityRole="button"
             onPress={onPress}
+            onLongPress={onLongPress}
             style={[
                 styles.card,
                 {
-                    backgroundColor: getTonalSurfaceColor(M3Colors.surface, tintColor, 0.08),
+                    backgroundColor: getTonalSurfaceColor(M3Colors.surface, tintColor, isActive ? 0.15 : 0.08),
                     borderColor,
+                    transform: [{ scale: isActive ? 1.02 : 1 }],
+                    elevation: isActive ? 8 : 0,
+                    shadowOpacity: isActive ? 0.3 : 0,
                 },
             ]}
             activeOpacity={0.8}

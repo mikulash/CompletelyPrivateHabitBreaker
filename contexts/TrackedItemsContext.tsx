@@ -19,6 +19,7 @@ type TrackedItemsContextValue = {
     addItem: (item: TrackerItem) => void;
     updateItem: (item: TrackerItem) => void;
     removeItem: (id: string) => void;
+    reorderItems: (items: TrackerItem[]) => void;
     refresh: () => Promise<void>;
 };
 
@@ -90,9 +91,13 @@ export function TrackedItemsProvider({ children }: Readonly<PropsWithChildren>) 
         void cancelTrackerMilestoneNotifications(id);
     }, []);
 
+    const reorderItems = useCallback((newItems: TrackerItem[]) => {
+        setItems(newItems);
+    }, []);
+
     const value = useMemo(
-        () => ({ items, isLoading, addItem, updateItem, removeItem, refresh: loadItems }),
-        [addItem, isLoading, items, loadItems, removeItem, updateItem]
+        () => ({ items, isLoading, addItem, updateItem, removeItem, reorderItems, refresh: loadItems }),
+        [addItem, isLoading, items, loadItems, removeItem, reorderItems, updateItem]
     );
 
     return <TrackedItemsContext.Provider value={value}>{children}</TrackedItemsContext.Provider>;

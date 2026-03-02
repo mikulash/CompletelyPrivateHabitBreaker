@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
 import { Text } from '@/components/Themed';
 import { ColdTurkeyListCard } from '@/components/tracker/ColdTurkeyListCard';
@@ -13,7 +14,7 @@ import { TrackerType } from '@/enums/TrackerType';
 import type { TrackerItem } from '@/types/tracking';
 
 export default function HomeScreen() {
-    const { items } = useTrackedItems();
+    const { items, reorderItems } = useTrackedItems();
     const router = useRouter();
     const [isModalVisible, setModalVisible] = useState(false);
     const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
@@ -50,19 +51,35 @@ export default function HomeScreen() {
                     </TouchableOpacity>
                 </View>
 
-                <FlatList
+                <DraggableFlatList
                     data={items}
                     keyExtractor={(item) => item.id}
+                    onDragEnd={({ data }) => reorderItems(data)}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.listContent}
                     keyboardShouldPersistTaps="handled"
                     ListEmptyComponent={listEmptyComponent}
-                    renderItem={({ item }: { item: TrackerItem }) => {
+                    renderItem={({ item, drag, isActive }: RenderItemParams<TrackerItem>) => {
                         const handlePress = () => router.push({ pathname: '/tracker/[id]', params: { id: item.id } });
-                        if (item.type === TrackerType.ColdTurkey) {
-                            return <ColdTurkeyListCard item={item} onPress={handlePress} />;
-                        }
-                        return <DoseDecreaseListCard item={item} onPress={handlePress} />;
+                        return (
+                            <ScaleDecorator>
+                                {item.type === TrackerType.ColdTurkey ? (
+                                    <ColdTurkeyListCard
+                                        item={item as any}
+                                        onPress={handlePress}
+                                        onLongPress={drag}
+                                        isActive={isActive}
+                                    />
+                                ) : (
+                                    <DoseDecreaseListCard
+                                        item={item as any}
+                                        onPress={handlePress}
+                                        onLongPress={drag}
+                                        isActive={isActive}
+                                    />
+                                )}
+                            </ScaleDecorator>
+                        );
                     }}
                 />
 

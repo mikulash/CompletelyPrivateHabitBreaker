@@ -12,9 +12,11 @@ import { calculateAveragePause, getLastDoseGrouped, getTodaysDoseTotal, getTrack
 type Props = {
   item: DoseDecreaseTrackedItem;
   onPress: () => void;
+  onLongPress?: () => void;
+  isActive?: boolean;
 };
 
-export function DoseDecreaseListCard({ item, onPress }: Readonly<Props>) {
+export function DoseDecreaseListCard({ item, onPress, onLongPress, isActive }: Readonly<Props>) {
   const { updateItem } = useTrackedItems();
   const [doseInput, setDoseInput] = useState<string>('');
   const [nowMs, setNowMs] = useState<number>(Date.now());
@@ -82,11 +84,15 @@ export function DoseDecreaseListCard({ item, onPress }: Readonly<Props>) {
     <TouchableOpacity
       accessibilityRole="button"
       onPress={onPress}
+      onLongPress={onLongPress}
       style={[
         styles.card,
         {
-          backgroundColor: getTonalSurfaceColor(M3Colors.surface, tintColor, 0.08),
-          borderColor: hexToRgba(tintColor, 0.2)
+          backgroundColor: getTonalSurfaceColor(M3Colors.surface, tintColor, isActive ? 0.15 : 0.08),
+          borderColor: hexToRgba(tintColor, 0.2),
+          transform: [{ scale: isActive ? 1.02 : 1 }],
+          elevation: isActive ? 8 : 0,
+          shadowOpacity: isActive ? 0.3 : 0,
         }
       ]}
       activeOpacity={0.8}

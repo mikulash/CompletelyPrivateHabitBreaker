@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 
 import { M3Colors } from '@/constants/theme';
 import { TrackedItemsProvider } from '@/contexts/TrackedItemsContext';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { requestNotificationPermissions } from '../utils/notifications';
 
 export {
@@ -60,27 +61,29 @@ export default function RootLayout() {
     }
 
     return (
-        <ThemeProvider value={M3DarkTheme}>
-            <TrackedItemsProvider>
-                <Stack
-                    screenOptions={{
-                        headerStyle: { backgroundColor: M3Colors.surface },
-                        headerTintColor: M3Colors.onSurface,
-                        headerShadowVisible: false,
-                        contentStyle: { backgroundColor: M3Colors.surface },
-                    }}
-                >
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen
-                        name="tracker/[id]"
-                        options={{
-                            title: 'Details',
-                            headerBackTitle: 'Back',
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <ThemeProvider value={M3DarkTheme}>
+                <TrackedItemsProvider>
+                    <Stack
+                        screenOptions={{
+                            headerStyle: { backgroundColor: M3Colors.surface },
+                            headerTintColor: M3Colors.onSurface,
+                            headerShadowVisible: false,
+                            contentStyle: { backgroundColor: M3Colors.surface },
                         }}
-                    />
-                    <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-                </Stack>
-            </TrackedItemsProvider>
-        </ThemeProvider>
+                    >
+                        <Stack.Screen name="index" options={{ headerShown: false }} />
+                        <Stack.Screen
+                            name="tracker/[id]"
+                            options={{
+                                title: 'Details',
+                                headerBackTitle: 'Back',
+                            }}
+                        />
+                        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+                    </Stack>
+                </TrackedItemsProvider>
+            </ThemeProvider>
+        </GestureHandlerRootView>
     )
 }
