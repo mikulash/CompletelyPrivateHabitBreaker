@@ -201,6 +201,17 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
   const tintColor = M3Colors.vibrantOrange;
   const daysTracked = calculateDaysTracked(item.startedAt);
 
+  const twoWeekAverage = useMemo(() => {
+    if (allDailyTotals.length === 0) return 0;
+    const last14 = allDailyTotals.slice(-14);
+    if (last14.length === 0) return 0;
+    const sum = last14.reduce((acc, curr) => acc + curr.value, 0);
+    return sum / 14;
+  }, [allDailyTotals]);
+
+  const isUsingAverage = (daysTracked ?? 0) >= 14;
+  const referenceValue = isUsingAverage && twoWeekAverage > 0 ? twoWeekAverage : item.currentUsageValue;
+
   return (
     <TrackerDetailTemplate
       {...props}
@@ -243,7 +254,7 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
       renderSummary={(item) => {
         const slice = currentWeekSlice;
         const maxDataVal = Math.max(0, ...slice.map((d) => d.value));
-        const chartMax = Math.max(1, item.currentUsageValue, maxDataVal);
+        const chartMax = Math.max(1, referenceValue, maxDataVal);
         const totalInSlice = slice.reduce((acc, curr) => acc + curr.value, 0);
         const avgInSlice = slice.length > 0 ? (totalInSlice / slice.length).toFixed(2) : '0';
         const displayAvg = Number(avgInSlice);
@@ -317,6 +328,11 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                   <Text style={styles.chartUnit}>{item.currentUsageUnit} / day (avg)</Text>
                 </Text>
                 <Text style={styles.chartSubtitle}>{rangeLabel}</Text>
+                <Text style={styles.chartReferenceLabel}>
+                  {isUsingAverage
+                    ? `14-Day Avg Daily Intake: ${twoWeekAverage.toFixed(1)} ${item.currentUsageUnit}`
+                    : `Initial Daily Intake: ${item.currentUsageValue} ${item.currentUsageUnit}`}
+                </Text>
               </View>
 
               {slice.length === 0 ? (
@@ -331,12 +347,12 @@ export function DoseDecreaseDetail(props: DoseDecreaseDetailProps) {
                   </View>
 
                   <View style={styles.barsArea}>
-                    {/* Starting Dose Reference Line */}
-                    {item.currentUsageValue > 0 && (
+                    {/* Horizontal Reference Line */}
+                    {referenceValue > 0 && (
                       <View
                         style={[
                           styles.referenceLine,
-                          { bottom: `${(item.currentUsageValue / chartMax) * 100}%` },
+                          { bottom: `${(referenceValue / chartMax) * 100}%` },
                         ]}
                       />
                     )}
@@ -615,6 +631,11 @@ const styles = StyleSheet.create({
     ...M3Typography.bodySmall,
     color: M3Colors.onSurfaceVariant,
     marginTop: M3Spacing.xs,
+  },
+  chartReferenceLabel: {
+    ...M3Typography.labelMedium,
+    color: M3Colors.onSurface,
+    marginTop: M3Spacing.sm,
   },
   chartBody: {
     flexDirection: 'row',
